@@ -142,6 +142,7 @@
       box-shadow: 0 12px 24px rgba(207, 141, 57, 0.24);
     }
     .button-secondary { color: var(--text); background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); }
+    .button[disabled] { opacity: 0.65; cursor: wait; }
 
     .spread-meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-top: 18px; }
     .meta-card, .reading-box {
@@ -330,6 +331,7 @@
     const statusText = document.getElementById('statusText');
     const errorMessage = document.getElementById('errorMessage');
     let activeCategory = promptGroups[0].category;
+    let isLoading = false;
 
     renderSpreadOptions();
     renderPromptGroups();
@@ -388,7 +390,8 @@
       readingElement.innerHTML = '';
     }
 
-    function handleReading() {
+    async function handleReading() {
+      if (isLoading) return;
       const question = questionInput.value.trim();
       if (!question) {
         errorMessage.textContent = '請先輸入你的問題。';
@@ -397,9 +400,21 @@
       errorMessage.textContent = '';
       const spread = getCurrentSpread();
       const cards = drawCards(spread);
-      statusText.textContent = `占卜進行中：已翻開 ${spread.count} 張牌`;
+      setLoadingState(true);
+      statusText.textContent = `占卜進行中：已翻開 ${spread.count} 張牌，正在整理解讀`;
       renderCards(cards);
-      renderReading(question, spread, cards);
+      const localReading = buildLocalReading(cards);
+      try {
+        const aiReading = await requestAiReading(question, spread, cards);
+        renderReading(question, spread, cards, aiReading, true);
+        statusText.textContent = `占卜完成：已使用 Gemini 生成解讀`;
+      } catch (error) {
+        console.error('Gemini 解讀失敗，改用本地備援：', error);
+        renderReading(question, spread, cards, localReading, false);
+        statusText.textContent = '占卜完成：目前顯示本地備援解讀';
+      } finally {
+        setLoadingState(false);
+      }
     }
 
     function drawCards(spread) {
@@ -452,16 +467,14 @@
       `).join('');
     }
 
-    function renderReading(question, spread, cards) {
-      const summary = buildSummary(cards);
-      const action = buildAction(cards);
-      const caution = buildCaution(cards);
+    function renderReading(question, spread, cards, reading, usedAi) {
       readingElement.innerHTML = `
         <section class="reading-box"><h3>你的問題</h3><p>${escapeHtml(question)}</p></section>
         <section class="reading-box"><h3>牌陣焦點</h3><p>${spread.description}</p><ul>${cards.map((card) => `<li><strong>${card.position}</strong>：${card.positionMeaning}</li>`).join('')}</ul></section>
-        <section class="reading-box"><h3>整體解讀</h3><p>${summary}</p></section>
-        <section class="reading-box"><h3>下一步建議</h3><p>${action}</p></section>
-        <section class="reading-box"><h3>需要留意</h3><p>${caution}</p></section>
+        <section class="reading-box"><h3>整體解讀</h3><p>${escapeHtml(reading.summary)}</p></section>
+        <section class="reading-box"><h3>下一步建議</h3><p>${escapeHtml(reading.action)}</p></section>
+        <section class="reading-box"><h3>需要留意</h3><p>${escapeHtml(reading.caution)}</p></section>
+        <section class="reading-box"><h3>解讀來源</h3><p>${usedAi ? '這次解讀來自 Gemini 後端。' : 'Gemini 目前不可用，這次顯示的是本地備援解讀。'}</p></section>
       `;
     }
 
@@ -493,6 +506,64 @@
         return `${reversedCard.nameZh} 的逆位是這次最需要留意的訊號：${reversedCard.reversedBase} 如果你只是一直在腦中反覆打轉，卻沒有回到現實確認狀況，焦慮會比問題本身長得更快。`;
       }
       return '整體走向不差，但也不要因為方向看起來順，就提早鬆手。真正穩定的結果，仍然需要節奏、誠實與好好收尾。';
+    }
+
+    function buildLocalReading(cards) {
+      return {
+        summary: buildSummary(cards),
+        action: buildAction(cards),
+        caution: buildCaution(cards)
+      };
+    }
+
+    async function requestAiReading(question, spread, cards) {
+      const response = await fetch('/api/reading', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question,
+          spread: {
+            id: spread.id,
+            name: spread.name,
+            description: spread.description,
+            positions: spread.positions
+          },
+          cards: cards.map((card) => ({
+            nameZh: card.nameZh,
+            nameEn: card.nameEn,
+            position: card.position,
+            reversed: card.reversed,
+            keywords: card.keywords,
+            meaning: card.reversed ? card.reversedBase : card.uprightBase
+          }))
+        })
+      });
+
+      let payload = null;
+      try {
+        payload = await response.json();
+      } catch {
+        payload = null;
+      }
+
+      if (!response.ok) {
+        throw new Error(payload?.error || 'Gemini API 請求失敗');
+      }
+
+      if (!payload?.summary || !payload?.action || !payload?.caution) {
+        throw new Error('Gemini 回傳格式不完整');
+      }
+
+      return payload;
+    }
+
+    function setLoadingState(loading) {
+      isLoading = loading;
+      drawButton.disabled = loading;
+      drawButton.textContent = loading ? 'Gemini 解讀中...' : '抽牌解讀';
+      spreadSelect.disabled = loading;
+      questionInput.disabled = loading;
+      resetButton.disabled = loading;
     }
 
     function resetAll() {
