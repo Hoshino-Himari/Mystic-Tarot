@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mystic Tarot</title>
+  <title>神秘塔羅占卜</title>
   <style>
     :root {
       --bg: #07111f;
@@ -23,7 +23,7 @@
     html, body {
       margin: 0;
       min-height: 100%;
-      font-family: Georgia, 'Times New Roman', serif;
+      font-family: "Noto Serif TC", "PingFang TC", "Microsoft JhengHei", Georgia, serif;
       color: var(--text);
       background:
         radial-gradient(circle at top, rgba(142, 121, 255, 0.22), transparent 30%),
@@ -70,8 +70,7 @@
       background: rgba(255, 255, 255, 0.04);
       color: var(--gold);
       font-size: 12px;
-      letter-spacing: 0.28em;
-      text-transform: uppercase;
+      letter-spacing: 0.18em;
     }
 
     h1 {
@@ -79,7 +78,6 @@
       font-size: clamp(42px, 7vw, 88px);
       line-height: 0.95;
       letter-spacing: 0.08em;
-      text-transform: uppercase;
       color: transparent;
       background: linear-gradient(180deg, #fffdf6 0%, #f6dba4 46%, #c18b37 100%);
       -webkit-background-clip: text;
@@ -88,10 +86,10 @@
 
     .subtitle {
       margin: 0 auto;
-      width: min(700px, 100%);
+      width: min(720px, 100%);
       color: var(--muted);
       font-size: 16px;
-      line-height: 1.8;
+      line-height: 1.9;
     }
 
     .grid {
@@ -112,7 +110,7 @@
 
     .panel-inner, .ritual { padding: 26px; }
     .panel-title { margin: 0 0 8px; font-size: 22px; color: var(--gold-strong); }
-    .panel-copy, .footer-note { margin: 0 0 22px; color: var(--muted); line-height: 1.7; font-size: 14px; }
+    .panel-copy, .footer-note { margin: 0 0 22px; color: var(--muted); line-height: 1.8; font-size: 14px; }
     .field { margin-bottom: 18px; }
     .field label { display: block; margin-bottom: 10px; font-size: 13px; color: var(--gold); letter-spacing: 0.08em; }
 
@@ -121,7 +119,7 @@
       width: 100%; border-radius: 18px; border: 1px solid rgba(255,255,255,0.1);
       background: rgba(4, 10, 22, 0.82); color: var(--text); padding: 16px 18px; outline: none;
     }
-    textarea { min-height: 160px; resize: vertical; line-height: 1.7; }
+    textarea { min-height: 160px; resize: vertical; line-height: 1.8; }
 
     .chips { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
     .chip {
@@ -186,10 +184,10 @@
     .orientation-tag { background: rgba(255,143,143,0.12); color: #ffb8b8; border: 1px solid rgba(255,143,143,0.2); }
     .card-name-zh { font-size: 24px; color: var(--gold-strong); margin: 0; }
     .card-name-en { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
-    .card-meaning { margin-top: 12px; color: #dbe5f5; line-height: 1.7; font-size: 14px; }
+    .card-meaning { margin-top: 12px; color: #dbe5f5; line-height: 1.8; font-size: 14px; }
     .reading { display: grid; gap: 16px; }
     .reading-box h3 { margin: 0 0 10px; color: var(--gold-strong); font-size: 18px; }
-    .reading-box p, .reading-box li { color: #dde5f3; line-height: 1.8; margin: 0; }
+    .reading-box p, .reading-box li { color: #dde5f3; line-height: 1.9; margin: 0; }
     .reading-box ul { margin: 0; padding-left: 20px; }
     .error { color: var(--danger); min-height: 24px; margin-top: 10px; font-size: 14px; }
 
@@ -205,41 +203,41 @@
 <body>
   <div class="shell">
     <section class="hero">
-      <div class="eyebrow">Mystic Tarot Reading</div>
-      <h1>Mystic Tarot</h1>
-      <p class="subtitle">A cleaned and deployable tarot reading page. Ask your question, choose a spread, draw your cards, and receive a reflective reading without external APIs or exposed keys.</p>
+      <div class="eyebrow">神秘塔羅占卜</div>
+      <h1>神秘塔羅</h1>
+      <p class="subtitle">整理過、可直接部署的塔羅占卜頁面。輸入問題、選擇牌陣、抽出卡牌，取得一份清楚好讀的占卜整理，而且不需要外部 API 或外露金鑰。</p>
     </section>
 
     <section class="grid">
       <article class="panel">
         <div class="panel-inner">
-          <h2 class="panel-title">Start Reading</h2>
-          <p class="panel-copy">This version removes duplicate libraries, removes exposed API secrets, and works as a static site ready for GitHub Pages.</p>
+          <h2 class="panel-title">開始占卜</h2>
+          <p class="panel-copy">這個版本已移除重複套件與前端外露金鑰，現在是一個可直接放上 GitHub Pages 的靜態網站。</p>
 
           <div class="field">
-            <label for="spread">Spread</label>
+            <label for="spread">牌陣</label>
             <select id="spread"></select>
           </div>
 
           <div class="field">
-            <label for="question">Your Question</label>
-            <textarea id="question" placeholder="Example: What should I focus on in the next three months?"></textarea>
+            <label for="question">你的問題</label>
+            <textarea id="question" placeholder="例如：我接下來三個月最該專注的是什麼？"></textarea>
           </div>
 
           <div class="field">
-            <label>Prompt Ideas</label>
+            <label>靈感提問</label>
             <div class="chips" id="categoryChips"></div>
             <div class="question-list" id="questionList"></div>
           </div>
 
           <div class="spread-meta">
-            <div class="meta-card"><div class="meta-label">Card Count</div><div class="meta-value" id="metaCount">1 card</div></div>
-            <div class="meta-card"><div class="meta-label">Positions</div><div class="meta-value" id="metaPositions">Core Message</div></div>
+            <div class="meta-card"><div class="meta-label">抽牌張數</div><div class="meta-value" id="metaCount">1 張</div></div>
+            <div class="meta-card"><div class="meta-label">位置</div><div class="meta-value" id="metaPositions">核心訊息</div></div>
           </div>
 
           <div class="actions">
-            <button class="button button-primary" id="drawButton">Draw Cards</button>
-            <button class="button button-secondary" id="resetButton">Reset</button>
+            <button class="button button-primary" id="drawButton">抽牌解讀</button>
+            <button class="button button-secondary" id="resetButton">重設</button>
           </div>
           <div class="error" id="errorMessage"></div>
         </div>
@@ -247,10 +245,10 @@
 
       <aside class="panel">
         <div class="ritual">
-          <div class="status"><span class="status-dot"></span><span id="statusText">Waiting for your question</span></div>
+          <div class="status"><span class="status-dot"></span><span id="statusText">等待你提出問題</span></div>
           <div class="deck" id="deck"></div>
           <div class="reading" id="reading"></div>
-          <p class="footer-note">This reading is for reflection and direction only. It does not replace professional medical, legal, or financial advice.</p>
+          <p class="footer-note">這份解讀提供的是反思與方向，不代替專業醫療、法律或財務建議。</p>
         </div>
       </aside>
     </section>
@@ -258,64 +256,64 @@
 
   <script>
     const spreads = [
-      { id: 'single', name: 'Single Card', count: 1, positions: ['Core Message'], description: 'Best for a quick and direct insight.' },
-      { id: 'timeline', name: 'Past / Present / Near Future', count: 3, positions: ['Past Context', 'Present State', 'Near Future'], description: 'Best when you want to understand the flow of events over time.' },
-      { id: 'choice', name: 'Two Paths', count: 3, positions: ['Path A', 'Path B', 'Guidance'], description: 'Best when you are deciding between two directions.' }
+      { id: 'single', name: '單張指引', count: 1, positions: ['核心訊息'], description: '適合快速確認目前最重要的提醒。' },
+      { id: 'timeline', name: '過去／現在／近期未來', count: 3, positions: ['過去脈絡', '當下狀態', '近期未來'], description: '適合用時間軸理解事情如何走到現在。' },
+      { id: 'choice', name: '兩難抉擇', count: 3, positions: ['選項 A', '選項 B', '整體建議'], description: '適合在兩個方向之間做判斷。' }
     ];
 
     const promptGroups = [
-      { category: 'Love', questions: ['What is the true heart of this relationship right now?', 'Should I keep waiting, or should I shift my energy back to myself?', 'How is this connection likely to develop over the next few months?'] },
-      { category: 'Work', questions: ['What is the real reason I feel stuck in my work life?', 'Should I stay in this environment or prepare for a move?', 'What is the smartest first step if I want better income?'] },
-      { category: 'Self', questions: ['What inner pattern do I most need to release?', 'What am I actually afraid of beneath this anxiety?', 'How can I rebuild a healthier rhythm and stronger boundaries?'] }
+      { category: '感情', questions: ['這段關係現在真正的核心是什麼？', '我該繼續等待，還是把重心拉回自己身上？', '這段關係接下來幾個月可能怎麼發展？'] },
+      { category: '工作', questions: ['我在工作上卡住的真正原因是什麼？', '我該留在現在的環境，還是開始準備轉換？', '如果我想提升收入，最聰明的第一步是什麼？'] },
+      { category: '自我', questions: ['我現在最需要放下的內在模式是什麼？', '在焦慮底下，我真正害怕的是什麼？', '我該如何重新建立更健康的節奏與界線？'] }
     ];
 
     const majorArcana = [
-      ['the-fool', '愚者', 'The Fool', 'new beginnings', 'A leap into the unknown can become a gift if you stay open and brave.', 'Careless risk or denial may lead to avoidable mistakes.'],
-      ['the-magician', '魔術師', 'The Magician', 'personal power', 'You already have the tools. What matters now is focused action.', 'Energy is scattered. Reclaim your attention and follow through.'],
-      ['the-high-priestess', '女祭司', 'The High Priestess', 'intuition', 'Slow down and trust the quiet knowing underneath the noise.', 'Over-withholding or over-waiting can keep truth buried.'],
-      ['the-empress', '皇后', 'The Empress', 'nurture', 'Growth, care, and creative abundance are available here.', 'Too much comfort or over-giving can drain your center.'],
-      ['the-emperor', '皇帝', 'The Emperor', 'structure', 'Boundaries and clarity will stabilize the situation.', 'Control and rigidity can make connection harder.'],
-      ['the-hierophant', '教皇', 'The Hierophant', 'guidance', 'A trusted framework, teacher, or method can help now.', 'Old rules may be limiting what needs to evolve.'],
-      ['the-lovers', '戀人', 'The Lovers', 'choice', 'The right choice is the one aligned with your values.', 'Inner division can make even obvious choices feel hard.'],
-      ['the-chariot', '戰車', 'The Chariot', 'forward motion', 'Your strength grows when your will and direction match.', 'Pushing too hard can hide unresolved conflict.'],
-      ['strength', '力量', 'Strength', 'steady courage', 'Gentle discipline is stronger than force right now.', 'Suppressed emotion can spill over if ignored too long.'],
-      ['the-hermit', '隱者', 'The Hermit', 'inner search', 'Distance and reflection can reveal the next right move.', 'Too much isolation may turn reflection into stagnation.'],
-      ['wheel-of-fortune', '命運之輪', 'Wheel of Fortune', 'change', 'The wheel is moving. Adaptation matters more than control.', 'Resisting change may create unnecessary friction.'],
-      ['justice', '正義', 'Justice', 'truth and balance', 'Honesty, responsibility, and fairness bring clarity.', 'Avoiding consequences delays real resolution.'],
-      ['the-hanged-man', '吊人', 'The Hanged Man', 'new perspective', 'A pause can become meaningful if it changes your viewpoint.', 'Delay without purpose can become a trap.'],
-      ['death', '死神', 'Death', 'ending and renewal', 'Letting one chapter close creates space for a better one.', 'Refusing to release the old makes change heavier.'],
-      ['temperance', '節制', 'Temperance', 'alignment', 'Blend patience, timing, and moderation.', 'Extremes and imbalance are draining your energy.'],
-      ['the-devil', '惡魔', 'The Devil', 'attachment', 'Seeing the chain clearly is the first step to removing it.', 'Fear, craving, or dependency may be making the problem bigger.'],
-      ['the-tower', '高塔', 'The Tower', 'disruption', 'What falls away now was not solid enough to carry you further.', 'The longer truth is avoided, the sharper the break can feel.'],
-      ['the-star', '星星', 'The Star', 'hope', 'Healing, honesty, and renewed trust are possible.', 'Disappointment may be clouding the future more than reality is.'],
-      ['the-moon', '月亮', 'The Moon', 'uncertainty', 'Not everything is visible yet. Stay curious, not fearful.', 'Projection and anxiety can distort what is really happening.'],
-      ['the-sun', '太陽', 'The Sun', 'clarity', 'Truth, warmth, and confidence are moving closer.', 'Optimism without attention to detail may miss something important.'],
-      ['judgement', '審判', 'Judgement', 'awakening', 'You are being asked to answer a deeper calling now.', 'Self-judgment can keep you from hearing the real message.'],
-      ['the-world', '世界', 'The World', 'completion', 'A cycle is ready to complete. Let it close with intention.', 'Unfinished endings can block the next beginning.']
+      ['the-fool', '愚者', 'The Fool', '新的開始', '勇敢走向未知，新的可能性正在打開。', '衝動或過度樂觀，可能讓你忽略必要的準備。'],
+      ['the-magician', '魔術師', 'The Magician', '主動創造', '你手上其實已有資源，關鍵在於立即行動。', '能量分散、說得多做得少，需要把注意力收回。'],
+      ['the-high-priestess', '女祭司', 'The High Priestess', '直覺', '放慢速度，傾聽內在真正知道的答案。', '過度觀望或把情緒藏太深，反而讓真相更模糊。'],
+      ['the-empress', '皇后', 'The Empress', '滋養', '關係、創意與照顧能量正在成長。', '過度付出或沉溺舒適，會讓自己失去平衡。'],
+      ['the-emperor', '皇帝', 'The Emperor', '秩序', '建立界線與規則，事情會更穩。', '控制慾過強，會讓關係和局勢變得僵硬。'],
+      ['the-hierophant', '教皇', 'The Hierophant', '信念與方法', '找回可信的做法、制度或前輩指引。', '舊規則可能已不再適合現在的你。'],
+      ['the-lovers', '戀人', 'The Lovers', '選擇', '真正的答案來自價值是否一致。', '猶豫與分裂感，讓簡單選擇也變困難。'],
+      ['the-chariot', '戰車', 'The Chariot', '推進', '只要把力量對準方向，就能往前。', '用力過猛，反而掩蓋了內在衝突。'],
+      ['strength', '力量', 'Strength', '溫柔的堅定', '真正的力量來自穩定與節制。', '壓抑太久的情緒，可能在不對的時候爆開。'],
+      ['the-hermit', '隱者', 'The Hermit', '沉澱', '拉開距離後，你會看得更清楚。', '過度封閉，容易把思考變成停滯。'],
+      ['wheel-of-fortune', '命運之輪', 'Wheel of Fortune', '轉變', '局勢正在移動，順勢調整比硬撐更有用。', '抗拒變化，只會增加不必要的摩擦。'],
+      ['justice', '正義', 'Justice', '平衡與誠實', '誠實面對因果與責任，答案會更清楚。', '逃避代價，只會延後真正的解決。'],
+      ['the-hanged-man', '吊人', 'The Hanged Man', '換個角度', '暫停不一定是失敗，也可能是在換視角。', '沒有方向的拖延，會把等待變成困住。'],
+      ['death', '死神', 'Death', '結束與重生', '讓舊的階段結束，新的空間才會打開。', '不肯放手，會讓轉變變得更辛苦。'],
+      ['temperance', '節制', 'Temperance', '調和', '把節奏調回平衡，局勢會重新流動。', '過量、極端與失衡，正在消耗你的能量。'],
+      ['the-devil', '惡魔', 'The Devil', '執著與束縛', '先看見自己被什麼綁住，才能真正鬆開。', '恐懼、依附或慾望正在放大問題。'],
+      ['the-tower', '高塔', 'The Tower', '破除幻象', '突然的變化是在逼你回到真相。', '拖越久，舊結構崩掉時的衝擊越大。'],
+      ['the-star', '星星', 'The Star', '希望', '修復與清明正在慢慢回來。', '失望感可能比現實本身更重。'],
+      ['the-moon', '月亮', 'The Moon', '模糊與潛意識', '現在不是所有事都看得清，先保持覺察。', '焦慮與投射可能扭曲了事實。'],
+      ['the-sun', '太陽', 'The Sun', '明朗', '真相、溫暖與信心正逐漸靠近。', '只看樂觀面，可能會忽略細節。'],
+      ['judgement', '審判', 'Judgement', '召喚', '你正被要求回應更深層的內在召喚。', '自責與反覆後悔，會讓你聽不見真正的訊息。'],
+      ['the-world', '世界', 'The World', '完成', '一個循環即將完整收束，準備進入下一章。', '尾聲沒收好，新的開始就難以展開。']
     ];
 
     const suitProfiles = {
-      Wands: { zh: '權杖', theme: 'action and drive', upright: 'Momentum grows when you act on what matters.', reversed: 'Restlessness, delay, or burnout may be weakening your fire.' },
-      Cups: { zh: '聖杯', theme: 'emotion and connection', upright: 'Feelings, relationships, and emotional truth matter most here.', reversed: 'Emotional backlog or confusion may be hiding the heart of the issue.' },
-      Swords: { zh: '寶劍', theme: 'mind and decision', upright: 'Clarity comes from naming the truth and thinking cleanly.', reversed: 'Overthinking may be louder than the facts.' },
-      Pentacles: { zh: '錢幣', theme: 'stability and reality', upright: 'Grounding, resources, and practical care create progress.', reversed: 'Stress around security may be disrupting your focus.' }
+      Wands: { zh: '權杖', theme: '行動與熱情', upright: '提醒你主動推進，把想法化為行動。', reversed: '拖延、躁進或疲乏，可能正在削弱你的火力。' },
+      Cups: { zh: '聖杯', theme: '情感與關係', upright: '情緒、連結與內心需求是關鍵。', reversed: '情緒積壓或混亂，正在遮住問題核心。' },
+      Swords: { zh: '寶劍', theme: '思考與決斷', upright: '把事實說清楚，判斷才會穩。', reversed: '過度思考，可能比現實本身更吵雜。' },
+      Pentacles: { zh: '錢幣', theme: '現實與穩定', upright: '把注意力放回資源、身體與長期穩定。', reversed: '對安全感的壓力，正在打亂你的專注。' }
     };
 
     const ranks = [
-      ['Ace', '一', 'A new opening is appearing.', 'A new opening is present, but it still needs your commitment.'],
-      ['Two', '二', 'Balance, negotiation, and choice are central.', 'Prolonged hesitation may be freezing the energy.'],
-      ['Three', '三', 'Support, collaboration, or early growth is visible.', 'Misalignment with others may be slowing results.'],
-      ['Four', '四', 'Stability and rest have real value now.', 'Holding too tightly can stop healthy movement.'],
-      ['Five', '五', 'Tension reveals the gap that needs attention.', 'Conflict or loss may feel sharp, but it is not the whole story.'],
-      ['Six', '六', 'Repair, transition, or shared support is possible.', 'Surface calm may be masking unfinished business.'],
-      ['Seven', '七', 'Strategy and discernment matter right now.', 'Scattered attention weakens your position.'],
-      ['Eight', '八', 'Progress comes through concentrated effort or acceleration.', 'The block may be in direction rather than ability.'],
-      ['Nine', '九', 'You are close to a result, but pressure is high.', 'Fatigue can distort perspective if ignored.'],
-      ['Ten', '十', 'A full cycle reaches its peak or conclusion.', 'The load may have become heavier than it needs to be.'],
-      ['Page', '侍者', 'A fresh message, attitude, or learning path is emerging.', 'Immaturity or inconsistency may be part of the issue.'],
-      ['Knight', '騎士', 'Movement, pursuit, and conviction push the story forward.', 'Rushing or wavering can create waste.'],
-      ['Queen', '皇后', 'Maturity, care, and inner command are available.', 'Emotional imbalance or over-functioning needs correction.'],
-      ['King', '國王', 'Steady leadership and responsibility matter now.', 'Control or rigidity may be shutting out what is true.']
+      ['Ace', '一', '新的開端正在出現。', '機會已經出現，但還需要你真正接住。'],
+      ['Two', '二', '重點在平衡、協調與選擇。', '猶豫太久，會讓能量停住。'],
+      ['Three', '三', '合作、支持或初步成果開始浮現。', '與他人的落差，可能拖慢進展。'],
+      ['Four', '四', '穩定與休整同樣重要。', '抓得太緊，會讓流動變少。'],
+      ['Five', '五', '衝突會讓真正的缺口被看見。', '挫折雖然明顯，但它不是全貌。'],
+      ['Six', '六', '修復、過渡或彼此支持是可能的。', '表面平靜下，可能還有未完成的事。'],
+      ['Seven', '七', '現在特別需要策略與辨識力。', '注意力分散，會削弱你的判斷。'],
+      ['Eight', '八', '專注投入後，進展會加快。', '卡住的不一定是能力，而可能是方向。'],
+      ['Nine', '九', '你已經靠近結果，但壓力也很明顯。', '忽略疲憊，容易讓觀點失真。'],
+      ['Ten', '十', '一個循環正走向高峰或收尾。', '負擔可能已經超過合理範圍。'],
+      ['Page', '侍者', '新的訊息、態度或學習入口正在出現。', '不夠成熟或三分鐘熱度，可能是關鍵。'],
+      ['Knight', '騎士', '推進、追求與行動正在主導局勢。', '太快或反覆不定，會造成消耗。'],
+      ['Queen', '皇后', '成熟、細膩與內在掌握感會幫到你。', '情緒與照顧分寸失衡，需要重新校準。'],
+      ['King', '國王', '現在需要穩住大局並做出成熟決定。', '控制與僵化，可能壓過了真正需求。']
     ];
 
     const deck = buildDeck();
@@ -381,25 +379,25 @@
 
     function updateSpreadMeta() {
       const spread = getCurrentSpread();
-      metaCount.textContent = `${spread.count} ${spread.count === 1 ? 'card' : 'cards'}`;
+      metaCount.textContent = `${spread.count} 張`;
       metaPositions.textContent = spread.positions.join(' / ');
     }
 
     function renderEmptyState() {
-      deckElement.innerHTML = '<article class="card"><div class="card-frame"></div><div class="card-placeholder"><div class="sigil">✦</div><strong>No cards drawn yet</strong><span>Choose a spread, ask a question, and begin your reading.</span></div></article>';
+      deckElement.innerHTML = '<article class="card"><div class="card-frame"></div><div class="card-placeholder"><div class="sigil">✦</div><strong>尚未抽牌</strong><span>選好牌陣、輸入問題後，就可以開始占卜。</span></div></article>';
       readingElement.innerHTML = '';
     }
 
     function handleReading() {
       const question = questionInput.value.trim();
       if (!question) {
-        errorMessage.textContent = 'Please enter a question first.';
+        errorMessage.textContent = '請先輸入你的問題。';
         return;
       }
       errorMessage.textContent = '';
       const spread = getCurrentSpread();
       const cards = drawCards(spread);
-      statusText.textContent = `Reading in progress: ${spread.count} ${spread.count === 1 ? 'card' : 'cards'} revealed`;
+      statusText.textContent = `占卜進行中：已翻開 ${spread.count} 張牌`;
       renderCards(cards);
       renderReading(question, spread, cards);
     }
@@ -420,16 +418,16 @@
 
     function getPositionMeaning(spreadId, position) {
       const meanings = {
-        single: { 'Core Message': 'This is the clearest central signal in the reading.' },
+        single: { '核心訊息': '這是本次占卜最核心的訊息。' },
         timeline: {
-          'Past Context': 'This shows the pattern or event that shaped the present.',
-          'Present State': 'This is the most important energy active now.',
-          'Near Future': 'This suggests the likely direction if the current pattern continues.'
+          '過去脈絡': '顯示事情如何發展到現在。',
+          '當下狀態': '指出此刻最重要的狀態。',
+          '近期未來': '顯示若照目前節奏走下去，接下來可能的發展。'
         },
         choice: {
-          'Path A': 'This reveals the tone, cost, and growth of the first option.',
-          'Path B': 'This reveals the tone, cost, and growth of the second option.',
-          'Guidance': 'This does not choose for you. It points to the wisest way to choose.'
+          '選項 A': '呈現第一個方向的氣氛、代價與成長性。',
+          '選項 B': '呈現第二個方向的氣氛、代價與成長性。',
+          '整體建議': '這不是替你做決定，而是提醒你該怎麼選。'
         }
       };
       return meanings[spreadId][position];
@@ -442,7 +440,7 @@
           <div class="card-face">
             <div>
               <div class="position-tag">${card.position}</div>
-              ${card.reversed ? '<div class="orientation-tag" style="margin-top:10px;">Reversed</div>' : ''}
+              ${card.reversed ? '<div class="orientation-tag" style="margin-top:10px;">逆位</div>' : ''}
             </div>
             <div>
               <h3 class="card-name-zh">${card.nameZh}</h3>
@@ -459,11 +457,11 @@
       const action = buildAction(cards);
       const caution = buildCaution(cards);
       readingElement.innerHTML = `
-        <section class="reading-box"><h3>Your Question</h3><p>${escapeHtml(question)}</p></section>
-        <section class="reading-box"><h3>Spread Focus</h3><p>${spread.description}</p><ul>${cards.map((card) => `<li><strong>${card.position}</strong>: ${card.positionMeaning}</li>`).join('')}</ul></section>
-        <section class="reading-box"><h3>Overall Reading</h3><p>${summary}</p></section>
-        <section class="reading-box"><h3>Best Next Step</h3><p>${action}</p></section>
-        <section class="reading-box"><h3>What To Watch</h3><p>${caution}</p></section>
+        <section class="reading-box"><h3>你的問題</h3><p>${escapeHtml(question)}</p></section>
+        <section class="reading-box"><h3>牌陣焦點</h3><p>${spread.description}</p><ul>${cards.map((card) => `<li><strong>${card.position}</strong>：${card.positionMeaning}</li>`).join('')}</ul></section>
+        <section class="reading-box"><h3>整體解讀</h3><p>${summary}</p></section>
+        <section class="reading-box"><h3>下一步建議</h3><p>${action}</p></section>
+        <section class="reading-box"><h3>需要留意</h3><p>${caution}</p></section>
       `;
     }
 
@@ -471,36 +469,36 @@
       const majorCount = cards.filter((card) => card.arcana === 'Major').length;
       const reversedCount = cards.filter((card) => card.reversed).length;
       const lead = cards[0];
-      const intro = `${lead.nameZh} opens the reading and highlights the theme of "${lead.keywords}". This situation asks for conscious attention instead of automatic reaction.`;
+      const intro = `${lead.nameZh} 作為起點，指出你現在最需要正視的主題是「${lead.keywords}」。這件事更需要清醒地看待，而不是靠習慣反應。`;
       let weight = '';
-      if (majorCount >= 2) weight = 'With several major arcana cards present, this feels like a meaningful life lesson rather than a short-term fluctuation.';
-      else if (majorCount === 1) weight = 'One major arcana card shows a meaningful turning point inside the situation, even if the surface still looks ordinary.';
-      else weight = 'This spread leans toward everyday dynamics, so grounded choices and follow-through matter most.';
+      if (majorCount >= 2) weight = '這組牌裡的大牌偏多，代表這不只是眼前的小波動，而是帶有明顯的人生課題。';
+      else if (majorCount === 1) weight = '其中有一張大牌，表示這件事裡藏著一個關鍵轉折點。';
+      else weight = '這組牌比較偏向日常層面的狀態，重點在於你如何處理眼前節奏。';
       let flow = '';
-      if (reversedCount >= 2) flow = 'Multiple reversed cards suggest that energy is blocked more by inner resistance, delay, or emotional backlog than by external impossibility.';
-      else if (reversedCount === 1) flow = 'One reversed card suggests the key friction may be in mindset or timing more than in the outer world.';
-      else flow = 'Mostly upright cards show that momentum is available if you stay aligned with what truly matters.';
-      const positions = cards.map((card) => `${card.position} shows ${card.nameZh}: ${card.reversed ? card.reversedBase : card.uprightBase}`).join(' ');
+      if (reversedCount >= 2) flow = '逆位偏多，代表真正卡住你的，往往是內在阻力、拖延或情緒累積，而不完全是外在條件。';
+      else if (reversedCount === 1) flow = '有一張逆位提醒你，問題的摩擦點可能更接近心態與時機，而不是表面局勢。';
+      else flow = '整體正位較多，表示只要你對準核心，事情其實有往前的空間。';
+      const positions = cards.map((card) => `${card.position} 出現 ${card.nameZh}：${card.reversed ? card.reversedBase : card.uprightBase}`).join(' ');
       return `${intro} ${weight} ${flow} ${positions}`;
     }
 
     function buildAction(cards) {
       const card = cards.find((item) => !item.reversed) || cards[0];
-      return `Start with the area marked as ${card.position}. ${card.nameZh} points toward this move: ${card.uprightBase} Turn that message into one visible action, such as naming your need, setting a deadline, organizing resources, or ending a draining pattern.`;
+      return `先從「${card.position}」這一塊開始最有效。${card.nameZh} 給你的方向是：${card.uprightBase} 把這個提醒變成一個看得見的動作，例如說清需求、設下時限、整理資源，或停止一個一直消耗你的慣性。`;
     }
 
     function buildCaution(cards) {
       const reversedCard = cards.find((card) => card.reversed);
       if (reversedCard) {
-        return `${reversedCard.nameZh} reversed is the clearest caution point: ${reversedCard.reversedBase} If you keep circling in thought without checking reality, anxiety can grow faster than the actual issue.`;
+        return `${reversedCard.nameZh} 的逆位是這次最需要留意的訊號：${reversedCard.reversedBase} 如果你只是一直在腦中反覆打轉，卻沒有回到現實確認狀況，焦慮會比問題本身長得更快。`;
       }
-      return 'The spread overall is supportive, but do not become careless just because the direction looks promising. Good outcomes still need pacing, honesty, and a clean follow-through.';
+      return '整體走向不差，但也不要因為方向看起來順，就提早鬆手。真正穩定的結果，仍然需要節奏、誠實與好好收尾。';
     }
 
     function resetAll() {
       questionInput.value = '';
       errorMessage.textContent = '';
-      statusText.textContent = 'Waiting for your question';
+      statusText.textContent = '等待你提出問題';
       renderEmptyState();
     }
 
