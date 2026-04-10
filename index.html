@@ -1,0 +1,512 @@
+﻿<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mystic Tarot</title>
+  <style>
+    :root {
+      --bg: #07111f;
+      --panel: rgba(10, 18, 34, 0.84);
+      --line: rgba(255, 218, 138, 0.2);
+      --gold: #f3c56b;
+      --gold-strong: #ffd98f;
+      --violet: #8e79ff;
+      --mint: #8fe7d4;
+      --text: #f8f4ed;
+      --muted: #b4bfd5;
+      --danger: #ff8f8f;
+      --shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: Georgia, 'Times New Roman', serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top, rgba(142, 121, 255, 0.22), transparent 30%),
+        radial-gradient(circle at 20% 20%, rgba(143, 231, 212, 0.15), transparent 25%),
+        linear-gradient(160deg, #07111f 0%, #0c1730 45%, #050811 100%);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background-image:
+        radial-gradient(circle at 15% 25%, rgba(255, 255, 255, 0.9) 0 1px, transparent 1.2px),
+        radial-gradient(circle at 74% 18%, rgba(255, 255, 255, 0.75) 0 1px, transparent 1.1px),
+        radial-gradient(circle at 33% 68%, rgba(255, 255, 255, 0.6) 0 1px, transparent 1.1px),
+        radial-gradient(circle at 82% 62%, rgba(255, 255, 255, 0.8) 0 1px, transparent 1.2px);
+      background-size: 220px 220px;
+      opacity: 0.45;
+    }
+
+    .shell {
+      position: relative;
+      z-index: 1;
+      width: min(1160px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 48px;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 36px 24px 22px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--gold);
+      font-size: 12px;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 18px 0 10px;
+      font-size: clamp(42px, 7vw, 88px);
+      line-height: 0.95;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: transparent;
+      background: linear-gradient(180deg, #fffdf6 0%, #f6dba4 46%, #c18b37 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+
+    .subtitle {
+      margin: 0 auto;
+      width: min(700px, 100%);
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.8;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      box-shadow: var(--shadow);
+      border-radius: 28px;
+      backdrop-filter: blur(18px);
+      overflow: hidden;
+    }
+
+    .panel-inner, .ritual { padding: 26px; }
+    .panel-title { margin: 0 0 8px; font-size: 22px; color: var(--gold-strong); }
+    .panel-copy, .footer-note { margin: 0 0 22px; color: var(--muted); line-height: 1.7; font-size: 14px; }
+    .field { margin-bottom: 18px; }
+    .field label { display: block; margin-bottom: 10px; font-size: 13px; color: var(--gold); letter-spacing: 0.08em; }
+
+    select, textarea, button { font: inherit; }
+    select, textarea {
+      width: 100%; border-radius: 18px; border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(4, 10, 22, 0.82); color: var(--text); padding: 16px 18px; outline: none;
+    }
+    textarea { min-height: 160px; resize: vertical; line-height: 1.7; }
+
+    .chips { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+    .chip {
+      border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.04); color: var(--muted);
+      border-radius: 999px; padding: 8px 12px; cursor: pointer;
+    }
+    .chip:hover, .chip.active { color: var(--text); border-color: rgba(243,197,107,0.45); background: rgba(243,197,107,0.12); }
+
+    .question-list { display: grid; gap: 10px; max-height: 320px; overflow: auto; padding-right: 4px; }
+    .question-item {
+      width: 100%; border: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.03); color: var(--text);
+      padding: 14px 16px; border-radius: 16px; text-align: left; cursor: pointer;
+    }
+
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+    .button { border: 0; border-radius: 999px; padding: 14px 20px; cursor: pointer; }
+    .button-primary {
+      color: #1a1204; font-weight: 700;
+      background: linear-gradient(135deg, #ffd98f 0%, #f3c56b 55%, #cf8d39 100%);
+      box-shadow: 0 12px 24px rgba(207, 141, 57, 0.24);
+    }
+    .button-secondary { color: var(--text); background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); }
+
+    .spread-meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-top: 18px; }
+    .meta-card, .reading-box {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 18px; padding: 14px 18px;
+    }
+    .meta-label { font-size: 12px; color: var(--muted); margin-bottom: 8px; letter-spacing: 0.06em; }
+    .meta-value { font-size: 15px; color: var(--gold-strong); }
+
+    .ritual {
+      position: relative; min-height: 100%; display: flex; flex-direction: column; gap: 20px;
+    }
+    .ritual::before {
+      content: ""; position: absolute; inset: 18px; border: 1px solid rgba(243,197,107,0.12); border-radius: 24px; pointer-events: none;
+    }
+
+    .status {
+      display: inline-flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 999px;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); color: var(--muted); font-size: 13px; align-self: flex-start;
+    }
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 14px rgba(143,231,212,0.7); }
+
+    .deck { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 18px; }
+    .card {
+      position: relative; min-height: 236px; border-radius: 22px; border: 1px solid rgba(255,255,255,0.08); overflow: hidden;
+      background: radial-gradient(circle at top, rgba(255,217,143,0.18), transparent 42%), linear-gradient(180deg, rgba(13,22,41,0.98), rgba(6,10,20,0.98));
+    }
+    .card-frame { position: absolute; inset: 10px; border: 1px solid rgba(243,197,107,0.18); border-radius: 16px; }
+    .card-placeholder, .card-face {
+      position: absolute; inset: 0; padding: 18px; display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .card-placeholder { align-items: center; justify-content: center; text-align: center; color: var(--muted); gap: 14px; }
+    .sigil {
+      width: 72px; height: 72px; border-radius: 50%; border: 1px solid rgba(243,197,107,0.28); display: grid; place-items: center;
+      color: var(--gold); font-size: 28px; background: rgba(255,255,255,0.03);
+    }
+    .position-tag, .orientation-tag {
+      display: inline-flex; padding: 6px 10px; border-radius: 999px; font-size: 11px; letter-spacing: 0.08em; align-self: flex-start;
+    }
+    .position-tag { background: rgba(142,121,255,0.16); color: #d9d0ff; }
+    .orientation-tag { background: rgba(255,143,143,0.12); color: #ffb8b8; border: 1px solid rgba(255,143,143,0.2); }
+    .card-name-zh { font-size: 24px; color: var(--gold-strong); margin: 0; }
+    .card-name-en { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
+    .card-meaning { margin-top: 12px; color: #dbe5f5; line-height: 1.7; font-size: 14px; }
+    .reading { display: grid; gap: 16px; }
+    .reading-box h3 { margin: 0 0 10px; color: var(--gold-strong); font-size: 18px; }
+    .reading-box p, .reading-box li { color: #dde5f3; line-height: 1.8; margin: 0; }
+    .reading-box ul { margin: 0; padding-left: 20px; }
+    .error { color: var(--danger); min-height: 24px; margin-top: 10px; font-size: 14px; }
+
+    @media (max-width: 940px) { .grid { grid-template-columns: 1fr; } }
+    @media (max-width: 640px) {
+      .shell { width: min(100% - 20px, 1160px); padding-top: 16px; }
+      .hero { padding-inline: 6px; }
+      .panel-inner, .ritual { padding: 18px; }
+      .deck { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="hero">
+      <div class="eyebrow">Mystic Tarot Reading</div>
+      <h1>Mystic Tarot</h1>
+      <p class="subtitle">A cleaned and deployable tarot reading page. Ask your question, choose a spread, draw your cards, and receive a reflective reading without external APIs or exposed keys.</p>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <div class="panel-inner">
+          <h2 class="panel-title">Start Reading</h2>
+          <p class="panel-copy">This version removes duplicate libraries, removes exposed API secrets, and works as a static site ready for GitHub Pages.</p>
+
+          <div class="field">
+            <label for="spread">Spread</label>
+            <select id="spread"></select>
+          </div>
+
+          <div class="field">
+            <label for="question">Your Question</label>
+            <textarea id="question" placeholder="Example: What should I focus on in the next three months?"></textarea>
+          </div>
+
+          <div class="field">
+            <label>Prompt Ideas</label>
+            <div class="chips" id="categoryChips"></div>
+            <div class="question-list" id="questionList"></div>
+          </div>
+
+          <div class="spread-meta">
+            <div class="meta-card"><div class="meta-label">Card Count</div><div class="meta-value" id="metaCount">1 card</div></div>
+            <div class="meta-card"><div class="meta-label">Positions</div><div class="meta-value" id="metaPositions">Core Message</div></div>
+          </div>
+
+          <div class="actions">
+            <button class="button button-primary" id="drawButton">Draw Cards</button>
+            <button class="button button-secondary" id="resetButton">Reset</button>
+          </div>
+          <div class="error" id="errorMessage"></div>
+        </div>
+      </article>
+
+      <aside class="panel">
+        <div class="ritual">
+          <div class="status"><span class="status-dot"></span><span id="statusText">Waiting for your question</span></div>
+          <div class="deck" id="deck"></div>
+          <div class="reading" id="reading"></div>
+          <p class="footer-note">This reading is for reflection and direction only. It does not replace professional medical, legal, or financial advice.</p>
+        </div>
+      </aside>
+    </section>
+  </div>
+
+  <script>
+    const spreads = [
+      { id: 'single', name: 'Single Card', count: 1, positions: ['Core Message'], description: 'Best for a quick and direct insight.' },
+      { id: 'timeline', name: 'Past / Present / Near Future', count: 3, positions: ['Past Context', 'Present State', 'Near Future'], description: 'Best when you want to understand the flow of events over time.' },
+      { id: 'choice', name: 'Two Paths', count: 3, positions: ['Path A', 'Path B', 'Guidance'], description: 'Best when you are deciding between two directions.' }
+    ];
+
+    const promptGroups = [
+      { category: 'Love', questions: ['What is the true heart of this relationship right now?', 'Should I keep waiting, or should I shift my energy back to myself?', 'How is this connection likely to develop over the next few months?'] },
+      { category: 'Work', questions: ['What is the real reason I feel stuck in my work life?', 'Should I stay in this environment or prepare for a move?', 'What is the smartest first step if I want better income?'] },
+      { category: 'Self', questions: ['What inner pattern do I most need to release?', 'What am I actually afraid of beneath this anxiety?', 'How can I rebuild a healthier rhythm and stronger boundaries?'] }
+    ];
+
+    const majorArcana = [
+      ['the-fool', '愚者', 'The Fool', 'new beginnings', 'A leap into the unknown can become a gift if you stay open and brave.', 'Careless risk or denial may lead to avoidable mistakes.'],
+      ['the-magician', '魔術師', 'The Magician', 'personal power', 'You already have the tools. What matters now is focused action.', 'Energy is scattered. Reclaim your attention and follow through.'],
+      ['the-high-priestess', '女祭司', 'The High Priestess', 'intuition', 'Slow down and trust the quiet knowing underneath the noise.', 'Over-withholding or over-waiting can keep truth buried.'],
+      ['the-empress', '皇后', 'The Empress', 'nurture', 'Growth, care, and creative abundance are available here.', 'Too much comfort or over-giving can drain your center.'],
+      ['the-emperor', '皇帝', 'The Emperor', 'structure', 'Boundaries and clarity will stabilize the situation.', 'Control and rigidity can make connection harder.'],
+      ['the-hierophant', '教皇', 'The Hierophant', 'guidance', 'A trusted framework, teacher, or method can help now.', 'Old rules may be limiting what needs to evolve.'],
+      ['the-lovers', '戀人', 'The Lovers', 'choice', 'The right choice is the one aligned with your values.', 'Inner division can make even obvious choices feel hard.'],
+      ['the-chariot', '戰車', 'The Chariot', 'forward motion', 'Your strength grows when your will and direction match.', 'Pushing too hard can hide unresolved conflict.'],
+      ['strength', '力量', 'Strength', 'steady courage', 'Gentle discipline is stronger than force right now.', 'Suppressed emotion can spill over if ignored too long.'],
+      ['the-hermit', '隱者', 'The Hermit', 'inner search', 'Distance and reflection can reveal the next right move.', 'Too much isolation may turn reflection into stagnation.'],
+      ['wheel-of-fortune', '命運之輪', 'Wheel of Fortune', 'change', 'The wheel is moving. Adaptation matters more than control.', 'Resisting change may create unnecessary friction.'],
+      ['justice', '正義', 'Justice', 'truth and balance', 'Honesty, responsibility, and fairness bring clarity.', 'Avoiding consequences delays real resolution.'],
+      ['the-hanged-man', '吊人', 'The Hanged Man', 'new perspective', 'A pause can become meaningful if it changes your viewpoint.', 'Delay without purpose can become a trap.'],
+      ['death', '死神', 'Death', 'ending and renewal', 'Letting one chapter close creates space for a better one.', 'Refusing to release the old makes change heavier.'],
+      ['temperance', '節制', 'Temperance', 'alignment', 'Blend patience, timing, and moderation.', 'Extremes and imbalance are draining your energy.'],
+      ['the-devil', '惡魔', 'The Devil', 'attachment', 'Seeing the chain clearly is the first step to removing it.', 'Fear, craving, or dependency may be making the problem bigger.'],
+      ['the-tower', '高塔', 'The Tower', 'disruption', 'What falls away now was not solid enough to carry you further.', 'The longer truth is avoided, the sharper the break can feel.'],
+      ['the-star', '星星', 'The Star', 'hope', 'Healing, honesty, and renewed trust are possible.', 'Disappointment may be clouding the future more than reality is.'],
+      ['the-moon', '月亮', 'The Moon', 'uncertainty', 'Not everything is visible yet. Stay curious, not fearful.', 'Projection and anxiety can distort what is really happening.'],
+      ['the-sun', '太陽', 'The Sun', 'clarity', 'Truth, warmth, and confidence are moving closer.', 'Optimism without attention to detail may miss something important.'],
+      ['judgement', '審判', 'Judgement', 'awakening', 'You are being asked to answer a deeper calling now.', 'Self-judgment can keep you from hearing the real message.'],
+      ['the-world', '世界', 'The World', 'completion', 'A cycle is ready to complete. Let it close with intention.', 'Unfinished endings can block the next beginning.']
+    ];
+
+    const suitProfiles = {
+      Wands: { zh: '權杖', theme: 'action and drive', upright: 'Momentum grows when you act on what matters.', reversed: 'Restlessness, delay, or burnout may be weakening your fire.' },
+      Cups: { zh: '聖杯', theme: 'emotion and connection', upright: 'Feelings, relationships, and emotional truth matter most here.', reversed: 'Emotional backlog or confusion may be hiding the heart of the issue.' },
+      Swords: { zh: '寶劍', theme: 'mind and decision', upright: 'Clarity comes from naming the truth and thinking cleanly.', reversed: 'Overthinking may be louder than the facts.' },
+      Pentacles: { zh: '錢幣', theme: 'stability and reality', upright: 'Grounding, resources, and practical care create progress.', reversed: 'Stress around security may be disrupting your focus.' }
+    };
+
+    const ranks = [
+      ['Ace', '一', 'A new opening is appearing.', 'A new opening is present, but it still needs your commitment.'],
+      ['Two', '二', 'Balance, negotiation, and choice are central.', 'Prolonged hesitation may be freezing the energy.'],
+      ['Three', '三', 'Support, collaboration, or early growth is visible.', 'Misalignment with others may be slowing results.'],
+      ['Four', '四', 'Stability and rest have real value now.', 'Holding too tightly can stop healthy movement.'],
+      ['Five', '五', 'Tension reveals the gap that needs attention.', 'Conflict or loss may feel sharp, but it is not the whole story.'],
+      ['Six', '六', 'Repair, transition, or shared support is possible.', 'Surface calm may be masking unfinished business.'],
+      ['Seven', '七', 'Strategy and discernment matter right now.', 'Scattered attention weakens your position.'],
+      ['Eight', '八', 'Progress comes through concentrated effort or acceleration.', 'The block may be in direction rather than ability.'],
+      ['Nine', '九', 'You are close to a result, but pressure is high.', 'Fatigue can distort perspective if ignored.'],
+      ['Ten', '十', 'A full cycle reaches its peak or conclusion.', 'The load may have become heavier than it needs to be.'],
+      ['Page', '侍者', 'A fresh message, attitude, or learning path is emerging.', 'Immaturity or inconsistency may be part of the issue.'],
+      ['Knight', '騎士', 'Movement, pursuit, and conviction push the story forward.', 'Rushing or wavering can create waste.'],
+      ['Queen', '皇后', 'Maturity, care, and inner command are available.', 'Emotional imbalance or over-functioning needs correction.'],
+      ['King', '國王', 'Steady leadership and responsibility matter now.', 'Control or rigidity may be shutting out what is true.']
+    ];
+
+    const deck = buildDeck();
+    const spreadSelect = document.getElementById('spread');
+    const questionInput = document.getElementById('question');
+    const categoryChips = document.getElementById('categoryChips');
+    const questionList = document.getElementById('questionList');
+    const metaCount = document.getElementById('metaCount');
+    const metaPositions = document.getElementById('metaPositions');
+    const drawButton = document.getElementById('drawButton');
+    const resetButton = document.getElementById('resetButton');
+    const deckElement = document.getElementById('deck');
+    const readingElement = document.getElementById('reading');
+    const statusText = document.getElementById('statusText');
+    const errorMessage = document.getElementById('errorMessage');
+    let activeCategory = promptGroups[0].category;
+
+    renderSpreadOptions();
+    renderPromptGroups();
+    updateSpreadMeta();
+    renderEmptyState();
+    spreadSelect.addEventListener('change', updateSpreadMeta);
+    drawButton.addEventListener('click', handleReading);
+    resetButton.addEventListener('click', resetAll);
+
+    function buildDeck() {
+      const majors = majorArcana.map(([id, nameZh, nameEn, keywords, upright, reversed], index) => ({ id, nameZh, nameEn, arcana: 'Major', keywords, uprightBase: upright, reversedBase: reversed, order: index }));
+      const minors = [];
+      Object.entries(suitProfiles).forEach(([suitKey, suit]) => {
+        ranks.forEach(([rankEn, rankZh, upright, reversed], index) => {
+          minors.push({
+            id: `${suitKey.toLowerCase()}-${rankEn.toLowerCase()}`,
+            nameZh: `${suit.zh}${rankZh}`,
+            nameEn: `${rankEn} of ${suitKey}`,
+            arcana: 'Minor',
+            keywords: suit.theme,
+            uprightBase: `${upright} ${suit.upright}`,
+            reversedBase: `${reversed} ${suit.reversed}`,
+            order: index + 1
+          });
+        });
+      });
+      return [...majors, ...minors];
+    }
+
+    function renderSpreadOptions() {
+      spreadSelect.innerHTML = spreads.map((spread) => `<option value="${spread.id}">${spread.name}</option>`).join('');
+    }
+
+    function renderPromptGroups() {
+      categoryChips.innerHTML = promptGroups.map((group) => `<button class="chip ${group.category === activeCategory ? 'active' : ''}" data-category="${group.category}">${group.category}</button>`).join('');
+      Array.from(categoryChips.querySelectorAll('.chip')).forEach((button) => {
+        button.addEventListener('click', () => { activeCategory = button.dataset.category; renderPromptGroups(); });
+      });
+      const active = promptGroups.find((group) => group.category === activeCategory);
+      questionList.innerHTML = active.questions.map((question) => `<button class="question-item" type="button">${question}</button>`).join('');
+      Array.from(questionList.querySelectorAll('.question-item')).forEach((button) => {
+        button.addEventListener('click', () => { questionInput.value = button.textContent.trim(); });
+      });
+    }
+
+    function getCurrentSpread() { return spreads.find((spread) => spread.id === spreadSelect.value) || spreads[0]; }
+
+    function updateSpreadMeta() {
+      const spread = getCurrentSpread();
+      metaCount.textContent = `${spread.count} ${spread.count === 1 ? 'card' : 'cards'}`;
+      metaPositions.textContent = spread.positions.join(' / ');
+    }
+
+    function renderEmptyState() {
+      deckElement.innerHTML = '<article class="card"><div class="card-frame"></div><div class="card-placeholder"><div class="sigil">✦</div><strong>No cards drawn yet</strong><span>Choose a spread, ask a question, and begin your reading.</span></div></article>';
+      readingElement.innerHTML = '';
+    }
+
+    function handleReading() {
+      const question = questionInput.value.trim();
+      if (!question) {
+        errorMessage.textContent = 'Please enter a question first.';
+        return;
+      }
+      errorMessage.textContent = '';
+      const spread = getCurrentSpread();
+      const cards = drawCards(spread);
+      statusText.textContent = `Reading in progress: ${spread.count} ${spread.count === 1 ? 'card' : 'cards'} revealed`;
+      renderCards(cards);
+      renderReading(question, spread, cards);
+    }
+
+    function drawCards(spread) {
+      const pool = [...deck];
+      shuffle(pool);
+      return spread.positions.map((position, index) => ({ ...pool[index], position, reversed: Math.random() < 0.35, positionMeaning: getPositionMeaning(spread.id, position) }));
+    }
+
+    function shuffle(list) {
+      for (let i = list.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [list[i], list[j]] = [list[j], list[i]];
+      }
+      return list;
+    }
+
+    function getPositionMeaning(spreadId, position) {
+      const meanings = {
+        single: { 'Core Message': 'This is the clearest central signal in the reading.' },
+        timeline: {
+          'Past Context': 'This shows the pattern or event that shaped the present.',
+          'Present State': 'This is the most important energy active now.',
+          'Near Future': 'This suggests the likely direction if the current pattern continues.'
+        },
+        choice: {
+          'Path A': 'This reveals the tone, cost, and growth of the first option.',
+          'Path B': 'This reveals the tone, cost, and growth of the second option.',
+          'Guidance': 'This does not choose for you. It points to the wisest way to choose.'
+        }
+      };
+      return meanings[spreadId][position];
+    }
+
+    function renderCards(cards) {
+      deckElement.innerHTML = cards.map((card) => `
+        <article class="card">
+          <div class="card-frame"></div>
+          <div class="card-face">
+            <div>
+              <div class="position-tag">${card.position}</div>
+              ${card.reversed ? '<div class="orientation-tag" style="margin-top:10px;">Reversed</div>' : ''}
+            </div>
+            <div>
+              <h3 class="card-name-zh">${card.nameZh}</h3>
+              <p class="card-name-en">${card.nameEn}</p>
+              <p class="card-meaning">${card.reversed ? card.reversedBase : card.uprightBase}</p>
+            </div>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    function renderReading(question, spread, cards) {
+      const summary = buildSummary(cards);
+      const action = buildAction(cards);
+      const caution = buildCaution(cards);
+      readingElement.innerHTML = `
+        <section class="reading-box"><h3>Your Question</h3><p>${escapeHtml(question)}</p></section>
+        <section class="reading-box"><h3>Spread Focus</h3><p>${spread.description}</p><ul>${cards.map((card) => `<li><strong>${card.position}</strong>: ${card.positionMeaning}</li>`).join('')}</ul></section>
+        <section class="reading-box"><h3>Overall Reading</h3><p>${summary}</p></section>
+        <section class="reading-box"><h3>Best Next Step</h3><p>${action}</p></section>
+        <section class="reading-box"><h3>What To Watch</h3><p>${caution}</p></section>
+      `;
+    }
+
+    function buildSummary(cards) {
+      const majorCount = cards.filter((card) => card.arcana === 'Major').length;
+      const reversedCount = cards.filter((card) => card.reversed).length;
+      const lead = cards[0];
+      const intro = `${lead.nameZh} opens the reading and highlights the theme of "${lead.keywords}". This situation asks for conscious attention instead of automatic reaction.`;
+      let weight = '';
+      if (majorCount >= 2) weight = 'With several major arcana cards present, this feels like a meaningful life lesson rather than a short-term fluctuation.';
+      else if (majorCount === 1) weight = 'One major arcana card shows a meaningful turning point inside the situation, even if the surface still looks ordinary.';
+      else weight = 'This spread leans toward everyday dynamics, so grounded choices and follow-through matter most.';
+      let flow = '';
+      if (reversedCount >= 2) flow = 'Multiple reversed cards suggest that energy is blocked more by inner resistance, delay, or emotional backlog than by external impossibility.';
+      else if (reversedCount === 1) flow = 'One reversed card suggests the key friction may be in mindset or timing more than in the outer world.';
+      else flow = 'Mostly upright cards show that momentum is available if you stay aligned with what truly matters.';
+      const positions = cards.map((card) => `${card.position} shows ${card.nameZh}: ${card.reversed ? card.reversedBase : card.uprightBase}`).join(' ');
+      return `${intro} ${weight} ${flow} ${positions}`;
+    }
+
+    function buildAction(cards) {
+      const card = cards.find((item) => !item.reversed) || cards[0];
+      return `Start with the area marked as ${card.position}. ${card.nameZh} points toward this move: ${card.uprightBase} Turn that message into one visible action, such as naming your need, setting a deadline, organizing resources, or ending a draining pattern.`;
+    }
+
+    function buildCaution(cards) {
+      const reversedCard = cards.find((card) => card.reversed);
+      if (reversedCard) {
+        return `${reversedCard.nameZh} reversed is the clearest caution point: ${reversedCard.reversedBase} If you keep circling in thought without checking reality, anxiety can grow faster than the actual issue.`;
+      }
+      return 'The spread overall is supportive, but do not become careless just because the direction looks promising. Good outcomes still need pacing, honesty, and a clean follow-through.';
+    }
+
+    function resetAll() {
+      questionInput.value = '';
+      errorMessage.textContent = '';
+      statusText.textContent = 'Waiting for your question';
+      renderEmptyState();
+    }
+
+    function escapeHtml(value) {
+      return value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
+    }
+  </script>
+</body>
+</html>
