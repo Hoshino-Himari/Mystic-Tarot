@@ -1,9 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const spreads = [
   { id: 'single', name: '單張指引', count: 1, positions: ['核心訊息'], description: '適合快速確認目前最重要的提醒。' },
   { id: 'timeline', name: '過去／現在／近期未來', count: 3, positions: ['過去脈絡', '當下狀態', '近期未來'], description: '適合用時間軸理解事情如何走到現在。' },
   { id: 'choice', name: '兩難抉擇', count: 3, positions: ['選項 A', '選項 B', '整體建議'], description: '適合在兩個方向之間做判斷。' },
+  { id: 'relationship', name: '關係透視', count: 3, positions: ['我的狀態', '對方的狀態', '關係建議'], description: '適合釐清關係中的互動、期待與下一步。' },
+  { id: 'career', name: '職涯導航', count: 3, positions: ['目前優勢', '關鍵阻礙', '行動方向'], description: '適合整理工作、學業或創作上的突破口。' },
+  { id: 'inner', name: '內在對話', count: 3, positions: ['表層感受', '深層需求', '溫柔提醒'], description: '適合在混亂時回到自己，辨認真正的需要。' },
+  { id: 'cross', name: '五芒星指引', count: 5, positions: ['此刻核心', '正在支持你', '需要放下', '下一步', '整體訊息'], description: '適合想更全面梳理一件重要事情時使用。' },
 ];
 
 const questionGroups = {
@@ -52,6 +56,10 @@ function shuffle(cards) { return [...cards].sort(() => Math.random() - 0.5); }
 function positionMeaning(spreadId, position) {
   const meanings = {
     single: { 核心訊息: '這是本次占卜最核心的訊息。' },
+    relationship: { 我的狀態: '看見你此刻帶進這段關係的感受與期待。', 對方的狀態: '提供理解對方目前能量的另一個角度。', 關係建議: '提醒這段關係最值得被好好照顧的方向。' },
+    career: { 目前優勢: '指出你已經具備、可以善用的能力與資源。', 關鍵阻礙: '提醒目前最需要正視或調整的環節。', 行動方向: '提供一個可以開始實踐的方向。' },
+    inner: { 表層感受: '看見此刻最容易被感受到的情緒。', 深層需求: '辨認情緒底下真正渴望被回應的需要。', 溫柔提醒: '給自己一個不必逼迫、仍能向前的提醒。' },
+    cross: { 此刻核心: '聚焦這件事此刻最重要的本質。', 正在支持你: '看見正在默默幫助你的條件與力量。', 需要放下: '提醒可以暫時鬆開的執著或壓力。', 下一步: '指出眼前最適合採取的行動。', 整體訊息: '把所有線索收束成這次閱讀的核心方向。' },
     timeline: { 過去脈絡: '顯示事情如何發展到現在。', 當下狀態: '指出此刻最重要的狀態。', 近期未來: '顯示若照目前節奏走下去，接下來可能的發展。' },
     choice: { '選項 A': '呈現第一個方向的氣氛、代價與成長性。', '選項 B': '呈現第二個方向的氣氛、代價與成長性。', 整體建議: '這不是替你做決定，而是提醒你該怎麼選。' },
   };
@@ -74,6 +82,89 @@ function MagicPanel({ className = '', children }) {
     event.currentTarget.style.setProperty('--pointer-y', `${event.clientY - rect.top}px`);
   }
   return <section className={`magic-panel ${className}`} onPointerMove={followPointer}>{children}</section>;
+}
+
+function ParticleTitle() {
+  const canvasRef = useRef(null);
+  const pointerRef = useRef({ active: false, x: 0, y: 0 });
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const context = canvas.getContext('2d');
+    let frame = 0;
+    let particles = [];
+    let cancelled = false;
+
+    function setup() {
+      const ratio = Math.min(window.devicePixelRatio || 1, 2);
+      const width = canvas.clientWidth * ratio;
+      const height = canvas.clientHeight * ratio;
+      canvas.width = width;
+      canvas.height = height;
+      const mask = document.createElement('canvas');
+      mask.width = width;
+      mask.height = height;
+      const maskContext = mask.getContext('2d');
+      const fontSize = Math.min(height * 0.58, width / 5.05);
+      maskContext.fillStyle = '#fff';
+      maskContext.font = `800 ${fontSize}px "Noto Sans TC", sans-serif`;
+      maskContext.textAlign = 'center';
+      maskContext.textBaseline = 'middle';
+      maskContext.fillText('神秘塔羅', width / 2, height / 2);
+      const image = maskContext.getImageData(0, 0, width, height).data;
+      const gap = width < 900 ? 8 * ratio : 6 * ratio;
+      particles = [];
+      for (let y = gap; y < height - gap; y += gap) {
+        for (let x = gap; x < width - gap; x += gap) {
+          if (image[(Math.floor(y) * width + Math.floor(x)) * 4 + 3] > 128) {
+            particles.push({ x, y, homeX: x, homeY: y, vx: 0, vy: 0, size: Math.random() > 0.86 ? 1.7 * ratio : 1 * ratio });
+          }
+        }
+      }
+    }
+
+    function draw() {
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      const pointer = pointerRef.current;
+      particles.forEach((particle, index) => {
+        if (pointer.active) {
+          const dx = particle.x - pointer.x;
+          const dy = particle.y - pointer.y;
+          const distance = Math.hypot(dx, dy) || 1;
+          const radius = 84 * Math.min(window.devicePixelRatio || 1, 2);
+          if (distance < radius) {
+            const force = (radius - distance) / radius;
+            particle.vx += (dx / distance) * force * 1.6;
+            particle.vy += (dy / distance) * force * 1.6;
+          }
+        }
+        particle.vx += (particle.homeX - particle.x) * 0.026;
+        particle.vy += (particle.homeY - particle.y) * 0.026;
+        particle.vx *= 0.82;
+        particle.vy *= 0.82;
+        particle.x += particle.vx;
+        particle.y += particle.vy;
+        context.beginPath();
+        context.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+        context.fillStyle = index % 7 === 0 ? '#f8d982' : index % 3 === 0 ? '#cf9d55' : '#e8bd67';
+        context.fill();
+      });
+      frame = requestAnimationFrame(draw);
+    }
+
+    const ready = document.fonts?.ready ?? Promise.resolve();
+    ready.then(() => { if (!cancelled) { setup(); draw(); } });
+    const resize = () => { cancelAnimationFrame(frame); setup(); draw(); };
+    window.addEventListener('resize', resize);
+    return () => { cancelled = true; cancelAnimationFrame(frame); window.removeEventListener('resize', resize); };
+  }, []);
+
+  function movePointer(event) {
+    const rect = event.currentTarget.getBoundingClientRect();
+    pointerRef.current = { active: true, x: (event.clientX - rect.left) * (event.currentTarget.width / rect.width), y: (event.clientY - rect.top) * (event.currentTarget.height / rect.height) };
+  }
+
+  return <div className="particle-title-wrap"><h1 className="sr-only">神秘塔羅</h1><canvas ref={canvasRef} className="particle-title" onPointerMove={movePointer} onPointerLeave={() => { pointerRef.current.active = false; }} aria-label="可互動的粒子文字：神秘塔羅" /></div>;
 }
 
 function TarotCard({ card, revealed, index }) {
@@ -136,7 +227,7 @@ export default function App() {
   return <main className="site-shell">
     <div className="star-field" aria-hidden="true" />
     <nav className="topbar"><a href="#top" className="brand"><span>☾</span> 神秘塔羅</a><span>YOUR QUIET READING</span></nav>
-    <header className="hero" id="top"><p>給自己的占卜時間</p><h1>讓牌面陪你看見</h1><span>TAROT FOR A PAUSE, NOT A PREDICTION</span><div className="hero-orbit" aria-hidden="true" /></header>
+    <header className="hero" id="top"><p>給自己的占卜時間</p><ParticleTitle /><div className="hero-orbit" aria-hidden="true" /></header>
     <div className="app-grid">
       <MagicPanel className="question-panel">
         <p className="panel-kicker">01 · SET YOUR INTENTION</p><h2>先說說你在意的事</h2><p className="panel-intro">選擇觀看方式，然後寫下此刻真正想問的問題。不需要完美，只要誠實。</p>
