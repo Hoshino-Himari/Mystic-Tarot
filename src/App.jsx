@@ -22,6 +22,8 @@ const questionTips = [
   ['用開放式問法', '少用是非題，多問「我可以怎麼做」。'],
 ];
 
+const majorArtSlugs = ['fool', 'magician', 'high-priestess', 'empress', 'emperor', 'hierophant', 'lovers', 'chariot', 'strength', 'hermit', 'wheel', 'justice', 'hanged-man', 'death', 'temperance', 'devil', 'tower', 'star', 'moon', 'sun', 'judgement', 'world'];
+
 const majorArcana = [
   ['愚者', 'The Fool', '新的開始', '勇敢走向未知，新的可能性正在打開。', '衝動或過度樂觀，可能讓你忽略必要的準備。'],
   ['魔術師', 'The Magician', '主動創造', '你手上其實已有資源，關鍵在於立即行動。', '能量分散、說得多做得少，需要把注意力收回。'],
@@ -45,7 +47,18 @@ const majorArcana = [
   ['太陽', 'The Sun', '明朗', '真相、溫暖與信心正逐漸靠近。', '只看樂觀面，可能會忽略細節。'],
   ['審判', 'Judgement', '召喚', '你正被要求回應更深層的內在召喚。', '自責與反覆後悔，會讓你聽不見真正的訊息。'],
   ['世界', 'The World', '完成', '一個循環即將完整收束，準備進入下一章。', '尾聲沒收好，新的開始就難以展開。'],
-].map(([nameZh, nameEn, keywords, upright, reversed]) => ({ nameZh, nameEn, keywords, upright, reversed, arcana: '大阿爾克那' }));
+].map(([nameZh, nameEn, keywords, upright, reversed], index) => {
+  const number = String(index).padStart(2, '0');
+  return {
+    nameZh,
+    nameEn,
+    keywords,
+    upright,
+    reversed,
+    arcana: '大阿爾克那',
+    imageSrc: `/tarot-art/major-${number}-${majorArtSlugs[index]}.webp`,
+  };
+});
 
 const minorRanks = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '侍者', '騎士', '皇后', '國王'];
 const suitDetails = {
@@ -54,7 +67,17 @@ const suitDetails = {
   寶劍: ['思考與決斷', '把事實說清楚，判斷才會穩。', '過度思考，可能比現實本身更吵雜。'],
   錢幣: ['現實與穩定', '把注意力放回資源、身體與長期穩定。', '對安全感的壓力，正在打亂你的專注。'],
 };
-const minorArcana = Object.entries(suitDetails).flatMap(([suit, [keywords, upright, reversed]]) => minorRanks.map((rank) => ({ nameZh: `${suit}${rank}`, nameEn: `${rank} of ${suit}`, keywords, upright, reversed, arcana: '小阿爾克那' })));
+const suitArtSlugs = { 權杖: 'wands', 聖杯: 'cups', 寶劍: 'swords', 錢幣: 'pentacles' };
+const rankArtSlugs = { 一: '01', 二: '02', 三: '03', 四: '04', 五: '05', 六: '06', 七: '07', 八: '08', 九: '09', 十: '10', 侍者: 'page', 騎士: 'knight', 皇后: 'queen', 國王: 'king' };
+const minorArcana = Object.entries(suitDetails).flatMap(([suit, [keywords, upright, reversed]]) => minorRanks.map((rank) => ({
+  nameZh: `${suit}${rank}`,
+  nameEn: `${rank} of ${suit}`,
+  keywords,
+  upright,
+  reversed,
+  arcana: '小阿爾克那',
+  imageSrc: `/tarot-art/${suitArtSlugs[suit]}-${rankArtSlugs[rank]}.webp`,
+})));
 const deck = [...majorArcana, ...minorArcana];
 
 function sleep(ms) { return new Promise((resolve) => setTimeout(resolve, ms)); }
@@ -172,13 +195,31 @@ function ParticleTitle() {
 }
 
 function TarotCard({ card, revealed, index, onReveal }) {
-  return <button type="button" className={`tarot-card ${revealed ? 'is-revealed' : ''}`} style={{ '--delay': `${index * 120}ms` }} onClick={onReveal} disabled={revealed} aria-label={revealed ? `${card.position}：${card.nameZh}` : `翻開${card.position}`}>
-    <div className="tarot-card__inner">
-      <div className="tarot-card__back"><span className="card-star">✦</span><span>{card.position}</span><small>ARCANA</small></div>
-      <div className="tarot-card__front">
-        <span className="card-position">{card.position}</span>
-        <div><span className="card-moon">☾</span><h3>{card.nameZh}</h3><p>{card.nameEn}</p></div>
-        <div><span className={card.isReversed ? 'card-orientation reversed' : 'card-orientation'}>{card.isReversed ? '逆位' : '正位'}</span><p className="card-copy">{card.isReversed ? card.reversed : card.upright}</p></div>
+  function tiltCard(event) {
+    if (event.pointerType === 'touch' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = (event.clientX - rect.left) / rect.width - .5;
+    const y = (event.clientY - rect.top) / rect.height - .5;
+    event.currentTarget.style.setProperty('--tilt-x', `${-y * 5}deg`);
+    event.currentTarget.style.setProperty('--tilt-y', `${x * 7}deg`);
+    event.currentTarget.style.setProperty('--shine-x', `${(x + .5) * 100}%`);
+    event.currentTarget.style.setProperty('--shine-y', `${(y + .5) * 100}%`);
+  }
+  function resetTilt(event) {
+    event.currentTarget.style.setProperty('--tilt-x', '0deg');
+    event.currentTarget.style.setProperty('--tilt-y', '0deg');
+  }
+
+  return <button type="button" className={`tarot-card ${revealed ? 'is-revealed' : ''}`} style={{ '--delay': `${index * 120}ms` }} onPointerMove={tiltCard} onPointerLeave={resetTilt} onClick={onReveal} disabled={revealed} aria-label={revealed ? `${card.position}：${card.nameZh}` : `翻開${card.position}`}>
+    <div className="tarot-card__tilt">
+      <div className="tarot-card__inner">
+        <div className="tarot-card__back"><span className="card-star">✦</span><span>{card.position}</span><small>ARCANA</small></div>
+        <div className="tarot-card__front">
+          <span className="card-position">{card.position}</span>
+          <div className={`card-artwork ${card.isReversed ? 'is-reversed' : ''}`}><img src={card.imageSrc} alt="" /></div>
+          <div><h3>{card.nameZh}</h3><p>{card.nameEn}</p></div>
+          <div><span className={card.isReversed ? 'card-orientation reversed' : 'card-orientation'}>{card.isReversed ? '逆位' : '正位'}</span><p className="card-copy">{card.isReversed ? card.reversed : card.upright}</p></div>
+        </div>
       </div>
     </div>
   </button>;
