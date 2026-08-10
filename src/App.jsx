@@ -103,12 +103,7 @@ function localReading(cards) {
 }
 
 function MagicPanel({ className = '', children }) {
-  function followPointer(event) {
-    const rect = event.currentTarget.getBoundingClientRect();
-    event.currentTarget.style.setProperty('--pointer-x', `${event.clientX - rect.left}px`);
-    event.currentTarget.style.setProperty('--pointer-y', `${event.clientY - rect.top}px`);
-  }
-  return <section className={`magic-panel ${className}`} onPointerMove={followPointer}>{children}</section>;
+  return <section className={`magic-panel ${className}`}>{children}</section>;
 }
 
 function ParticleTitle() {
@@ -194,7 +189,7 @@ function ParticleTitle() {
   return <div className="particle-title-wrap"><h1 className="sr-only">神秘塔羅</h1><canvas ref={canvasRef} className="particle-title" onPointerMove={movePointer} onPointerLeave={() => { pointerRef.current.active = false; }} aria-label="可互動的粒子文字：神秘塔羅" /></div>;
 }
 
-function TarotCard({ card, revealed, index, onReveal }) {
+function TarotCard({ card, revealed, index, onReveal, onOpen }) {
   function tiltCard(event) {
     if (event.pointerType === 'touch' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const rect = event.currentTarget.getBoundingClientRect();
@@ -210,7 +205,7 @@ function TarotCard({ card, revealed, index, onReveal }) {
     event.currentTarget.style.setProperty('--tilt-y', '0deg');
   }
 
-  return <button type="button" className={`tarot-card ${revealed ? 'is-revealed' : ''}`} style={{ '--delay': `${index * 120}ms` }} onPointerMove={tiltCard} onPointerLeave={resetTilt} onClick={onReveal} disabled={revealed} aria-label={revealed ? `${card.position}：${card.nameZh}` : `翻開${card.position}`}>
+  return <button type="button" className={`tarot-card ${revealed ? 'is-revealed' : ''}`} style={{ '--delay': `${index * 120}ms` }} onPointerMove={tiltCard} onPointerLeave={resetTilt} onClick={(event) => (revealed ? onOpen(event) : onReveal(event))} aria-label={revealed ? `查看${card.position}：${card.nameZh}的大圖與解讀` : `翻開${card.position}`}>
     <div className="tarot-card__tilt">
       <div className="tarot-card__inner">
         <div className="tarot-card__back"><span className="card-star">✦</span><span>{card.position}</span><small>ARCANA</small></div>
@@ -225,6 +220,61 @@ function TarotCard({ card, revealed, index, onReveal }) {
   </button>;
 }
 
+function gptPrompt({ question, spread, cards }) {
+  const cardList = cards.map((card) => `- ${card.position}：${card.nameZh}（${card.isReversed ? '逆位' : '正位'}）｜${card.keywords}`).join('\n');
+  return `你是一位溫和、務實的塔羅解讀者。請用繁體中文協助我反思；不要把塔羅說成必然預言，不要替我做醫療、法律、投資或重大人生決定。\n\n我的問題：\n「${question || '（我尚未填寫，請先引導我把問題說清楚）'}」\n\n使用牌陣：${spread.name}\n各位置：${spread.positions.join('、')}\n\n已翻開的牌：\n${cardList || '（我還沒有翻開牌）'}\n\n請依牌陣位置逐張解讀，再整合它們的關聯；指出我可能忽略的盲點，並給我 1–3 個小而可執行的下一步。最後提供 3 個能讓我繼續思考的開放式追問。語氣請誠實、具體、溫和，不使用恐嚇或絕對化措辭。`;
+}
+
+function TarotCardDialog({ card, question, spread, visibleCards, reading, onClose }) {
+  const closeRef = useRef(null);
+  const [copyStatus, setCopyStatus] = useState('');
+  const prompt = gptPrompt({ question, spread, cards: visibleCards });
+
+  useEffect(() => {
+    closeRef.current?.focus();
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    function handleKeyDown(event) {
+      if (event.key === 'Escape') onClose();
+      if (event.key !== 'Tab') return;
+      const focusable = [...document.querySelectorAll('.card-dialog button, .card-dialog textarea, .card-dialog summary')].filter((element) => !element.disabled);
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => { document.body.style.overflow = previousOverflow; window.removeEventListener('keydown', handleKeyDown); };
+  }, [onClose]);
+
+  async function copyPrompt() {
+    try {
+      await navigator.clipboard.writeText(prompt);
+      setCopyStatus('已複製，可直接貼到 GPT。');
+    } catch {
+      setCopyStatus('無法自動複製，請從下方文字框手動複製。');
+    }
+  }
+
+  const meaning = card.isReversed ? card.reversed : card.upright;
+  return <div className="card-dialog-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+    <section className="card-dialog" role="dialog" aria-modal="true" aria-labelledby="card-dialog-title">
+      <button type="button" className="dialog-close" onClick={onClose} ref={closeRef} aria-label="關閉牌面大圖">×</button>
+      <div className={`dialog-artwork ${card.isReversed ? 'is-reversed' : ''}`}><img src={card.imageSrc} alt={`${card.nameZh}，${card.isReversed ? '逆位' : '正位'}，塔羅牌插畫`} /></div>
+      <div className="dialog-content">
+        <p className="panel-kicker">{card.position} · {card.isReversed ? 'REVERSED' : 'UPRIGHT'}</p>
+        <h2 id="card-dialog-title">{card.nameZh}</h2><p className="dialog-name-en">{card.nameEn}</p>
+        <span className={card.isReversed ? 'card-orientation reversed' : 'card-orientation'}>{card.isReversed ? '逆位' : '正位'}</span>
+        <p className="dialog-keywords">{card.keywords}</p>
+        <div className="dialog-meaning"><small>這張牌正在回答</small><p>{meaning}</p><small>{card.position}的位置意義</small><p>{card.positionMeaning}</p></div>
+        {reading && <div className="dialog-reading"><small>整體解讀摘要</small><p>{reading.summary}</p></div>}
+        <details className="gpt-prompt"><summary>交給 GPT 延伸解讀</summary><p>可直接複製下方提示詞，貼到 GPT 繼續追問。</p><textarea readOnly value={prompt} aria-label="可複製的 GPT 塔羅解讀提示詞" /><button type="button" onClick={copyPrompt}>複製提示詞</button><span aria-live="polite">{copyStatus}</span></details>
+      </div>
+    </section>
+  </div>;
+}
+
 export default function App() {
   const [spreadId, setSpreadId] = useState(spreads[0].id);
   const [question, setQuestion] = useState('');
@@ -232,15 +282,17 @@ export default function App() {
   const [cards, setCards] = useState([]);
   const [reading, setReading] = useState(null);
   const [revealedCards, setRevealedCards] = useState([]);
+  const [selectedCard, setSelectedCard] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const readingRequestedRef = useRef(false);
+  const cardOpenerRef = useRef(null);
   const spread = spreads.find((item) => item.id === spreadId) ?? spreads[0];
   const isChoosingCards = cards.length > 0 && !reading;
 
   async function draw() {
     if (!question.trim()) { setError('先寫下你想問的事，牌面才知道從哪裡開始。'); return; }
-    setError(''); setReading(null); setLoading(true); setRevealedCards([]); readingRequestedRef.current = false;
+    setError(''); setReading(null); setLoading(true); setRevealedCards([]); setSelectedCard(null); readingRequestedRef.current = false;
     const selected = shuffle(deck).slice(0, spread.count).map((card, index) => ({ ...card, position: spread.positions[index], positionMeaning: positionMeaning(spread.id, spread.positions[index]), isReversed: Math.random() < 0.35 }));
     setCards(selected);
     await sleep(520);
@@ -276,14 +328,18 @@ export default function App() {
     setReading(nextReading); setLoading(false);
   }
 
-  function revealCard(index) {
+  function revealCard(index, event) {
     if (loading || revealedCards.includes(index)) return;
     const next = [...revealedCards, index];
     setRevealedCards(next);
+    cardOpenerRef.current = event.currentTarget;
+    setSelectedCard(cards[index]);
     if (next.length === cards.length) finishReading(cards);
   }
 
-  function reset() { setQuestion(''); setCards([]); setReading(null); setError(''); setRevealedCards([]); readingRequestedRef.current = false; }
+  function openCard(card, event) { cardOpenerRef.current = event.currentTarget; setSelectedCard(card); }
+  function closeCard() { setSelectedCard(null); requestAnimationFrame(() => cardOpenerRef.current?.focus()); }
+  function reset() { setQuestion(''); setCards([]); setReading(null); setError(''); setRevealedCards([]); setSelectedCard(null); readingRequestedRef.current = false; }
 
   return <main className="site-shell">
     <div className="star-field" aria-hidden="true" />
@@ -303,12 +359,13 @@ export default function App() {
       </MagicPanel>
       <MagicPanel className="reading-panel">
         <div className="reading-head"><div><p className="panel-kicker">02 · THE READING</p><h2>{cards.length ? '輪到你翻開牌面' : '牌面會在這裡展開'}</h2></div><span className={loading ? 'status busy' : 'status'}><i />{loading ? '整理解讀中' : cards.length ? `${revealedCards.length} / ${cards.length} 張已翻開` : '靜候你的問題'}</span></div>
-        {cards.length ? <><p className="reveal-note">依序點選每張牌翻開；最後一張翻開後，解讀會自動出現。</p><div className="card-grid">{cards.map((card, index) => <TarotCard key={`${card.nameZh}-${index}`} card={card} index={index} revealed={revealedCards.includes(index)} onReveal={() => revealCard(index)} />)}</div></> : <div className="empty-card"><span>☾</span><b>尚未抽牌</b><p>在左側留下問題，牌面就會從這裡開始回答。</p><small>MYSTIC TAROT</small></div>}
+        {cards.length ? <><p className="reveal-note">依序點選每張牌翻開；牌面會以大圖展開，最後一張翻開後，解讀會自動出現。</p><div className="card-grid">{cards.map((card, index) => <TarotCard key={`${card.nameZh}-${index}`} card={card} index={index} revealed={revealedCards.includes(index)} onReveal={(event) => revealCard(index, event)} onOpen={(event) => openCard(card, event)} />)}</div></> : <div className="empty-card"><span>☾</span><b>尚未抽牌</b><p>在左側留下問題，牌面就會從這裡開始回答。</p><small>MYSTIC TAROT</small></div>}
         {reading && <div className="reading-result">
           <article><small>整體解讀</small><p>{reading.summary}</p></article><article><small>下一步建議</small><p>{reading.action}</p></article><article><small>需要留意</small><p>{reading.caution}</p></article>
         </div>}
         <p className="disclaimer">這份解讀提供反思與方向，不代替專業醫療、法律或財務建議。</p>
       </MagicPanel>
     </div>
+    {selectedCard && <TarotCardDialog card={selectedCard} question={question} spread={spread} visibleCards={cards.filter((card, index) => revealedCards.includes(index))} reading={reading} onClose={closeCard} />}
   </main>;
 }

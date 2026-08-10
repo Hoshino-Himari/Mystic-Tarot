@@ -98,6 +98,8 @@ select:focus {
 
 .tarot-card:not(.is-revealed) .tarot-card__tilt { cursor: pointer; }
 
+.tarot-card.is-revealed .tarot-card__tilt { cursor: zoom-in; }
+
 .tarot-card__front::before {
   position: absolute;
   inset: 0;
@@ -189,4 +191,171 @@ select:focus {
     transform: none !important;
     transition: none !important;
   }
+}
+
+/* Low-light galaxy and liquid glass are deliberately static so reading stays calm. */
+body {
+  min-height: 100vh;
+  background-color: #050713;
+  background-image:
+    radial-gradient(ellipse at 18% 12%, rgba(44, 59, 115, .34), transparent 35rem),
+    radial-gradient(ellipse at 86% 24%, rgba(73, 35, 102, .26), transparent 36rem),
+    radial-gradient(ellipse at 48% 85%, rgba(22, 59, 91, .19), transparent 42rem),
+    linear-gradient(145deg, #050713 8%, #090b1b 52%, #04050d 100%);
+}
+
+.star-field {
+  z-index: -1;
+  opacity: 1;
+  mask-image: none;
+  background-image:
+    radial-gradient(ellipse at 23% 35%, rgba(87, 124, 196, .12), transparent 33%),
+    radial-gradient(ellipse at 75% 68%, rgba(132, 74, 173, .11), transparent 37%),
+    radial-gradient(circle, rgba(232, 240, 255, .7) 0 .65px, transparent .9px),
+    radial-gradient(circle, rgba(180, 202, 255, .48) 0 .55px, transparent .85px),
+    radial-gradient(circle, rgba(244, 213, 160, .38) 0 .45px, transparent .8px);
+  background-size: auto, auto, 173px 173px, 281px 281px, 419px 419px;
+  background-position: center, center, 25px 53px, 121px 19px, 90px 142px;
+}
+
+.magic-panel {
+  border-color: rgba(226, 237, 255, .18);
+  background: linear-gradient(135deg, rgba(34, 42, 75, .63), rgba(9, 12, 29, .5));
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .34), inset 0 1px rgba(255, 255, 255, .19), inset 0 -1px rgba(118, 141, 203, .13);
+}
+
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .magic-panel {
+    -webkit-backdrop-filter: blur(20px) saturate(120%);
+    backdrop-filter: blur(20px) saturate(120%);
+  }
+}
+
+.magic-panel::before {
+  z-index: 0;
+  opacity: 1;
+  background: radial-gradient(520px circle at 16% 0%, rgba(138, 167, 244, .1), transparent 47%);
+  transition: none;
+}
+
+.magic-panel::after {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  pointer-events: none;
+  content: '';
+  border-radius: inherit;
+  background: linear-gradient(120deg, rgba(255, 255, 255, .14), transparent 27%, rgba(166, 188, 255, .045) 63%, transparent 81%);
+}
+
+.magic-panel:hover { border-color: rgba(222, 233, 255, .28); }
+.magic-panel:hover::before { opacity: 1; }
+.magic-panel > * { z-index: 1; }
+
+select,
+textarea {
+  border-color: rgba(222, 233, 255, .15);
+  background: rgba(5, 8, 22, .52);
+  box-shadow: inset 0 1px rgba(255, 255, 255, .035);
+}
+
+.card-dialog-backdrop {
+  position: fixed;
+  z-index: 30;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 14px;
+  overflow-y: auto;
+  background: rgba(3, 5, 16, .7);
+  -webkit-backdrop-filter: blur(16px) saturate(115%);
+  backdrop-filter: blur(16px) saturate(115%);
+}
+
+.card-dialog {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(290px, .9fr) minmax(320px, 1fr);
+  gap: clamp(22px, 4vw, 52px);
+  width: min(1120px, calc(100vw - 28px));
+  max-height: calc(100dvh - 28px);
+  overflow: auto;
+  padding: clamp(22px, 4vw, 48px);
+  border: 1px solid rgba(229, 239, 255, .25);
+  border-radius: 30px;
+  background: linear-gradient(135deg, rgba(43, 54, 91, .76), rgba(9, 12, 29, .65));
+  box-shadow: 0 34px 100px rgba(0, 0, 0, .56), inset 0 1px rgba(255, 255, 255, .22), inset 0 -1px rgba(144, 166, 222, .13);
+}
+
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .card-dialog {
+    -webkit-backdrop-filter: blur(28px) saturate(125%);
+    backdrop-filter: blur(28px) saturate(125%);
+  }
+}
+
+.dialog-close {
+  position: absolute;
+  z-index: 3;
+  top: 16px;
+  right: 16px;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(238, 244, 255, .25);
+  border-radius: 50%;
+  background: rgba(7, 10, 25, .48);
+  color: #f7f4ed;
+  font-size: 25px;
+  line-height: 1;
+}
+
+.dialog-close:hover,
+.dialog-close:focus-visible { border-color: rgba(247, 214, 139, .85); outline: none; }
+
+.dialog-artwork {
+  display: grid;
+  place-items: center;
+  align-self: start;
+  height: min(76dvh, 720px);
+  overflow: hidden;
+  border: 1px solid rgba(236, 205, 137, .48);
+  border-radius: 18px;
+  background: #080a18;
+  box-shadow: 0 22px 54px rgba(0, 0, 0, .36), inset 0 0 0 7px rgba(255, 255, 255, .035);
+}
+
+.dialog-artwork img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.dialog-artwork.is-reversed img { transform: rotate(180deg); }
+
+.dialog-content { align-self: center; min-width: 0; }
+.dialog-content h2 { margin: 7px 0 0; color: #f8df9c; font-size: clamp(34px, 5vw, 56px); line-height: 1.05; }
+.dialog-name-en { margin: 5px 0 16px; color: #bdbbd0; font: 12px "DM Mono", monospace; letter-spacing: .08em; }
+.dialog-keywords { margin: 13px 0 18px; color: #f1d38d; font-weight: 700; }
+.dialog-meaning,
+.dialog-reading { display: grid; gap: 7px; padding: 15px 0; border-top: 1px solid rgba(222, 233, 255, .13); }
+.dialog-meaning small,
+.dialog-reading small { color: #aebbe0; font: 10px "DM Mono", monospace; letter-spacing: .12em; }
+.dialog-meaning p,
+.dialog-reading p { margin: 0; color: #f0eef4; font-size: 15px; line-height: 1.85; }
+
+.gpt-prompt { margin-top: 18px; padding: 15px; border: 1px solid rgba(220, 230, 255, .17); border-radius: 15px; background: rgba(4, 7, 20, .3); }
+.gpt-prompt summary { color: #f3d48d; cursor: pointer; font-weight: 800; }
+.gpt-prompt > p { color: #c6c5d3; font-size: 13px; line-height: 1.65; }
+.gpt-prompt textarea { min-height: 175px; font-size: 12px; line-height: 1.65; }
+.gpt-prompt button { margin-top: 10px; padding: 10px 14px; border: 1px solid rgba(237, 202, 124, .58); border-radius: 10px; background: rgba(238, 202, 124, .11); color: #fff6e0; font-weight: 700; }
+.gpt-prompt span { display: block; min-height: 1.4em; margin-top: 8px; color: #aee3d1; font-size: 12px; }
+
+@media (max-width: 760px) {
+  .card-dialog { grid-template-columns: 1fr; gap: 22px; border-radius: 22px; }
+  .dialog-artwork { width: min(100%, 400px); justify-self: center; }
+  .dialog-artwork { height: min(56dvh, 600px); }
+  .dialog-content h2 { font-size: 40px; }
 }
