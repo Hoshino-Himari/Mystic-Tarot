@@ -1,20 +1,30 @@
 import { useEffect, useRef, useState } from 'react';
 
 const spreads = [
-  { id: 'single', name: '單張指引', count: 1, positions: ['核心訊息'], description: '適合快速確認目前最重要的提醒。' },
-  { id: 'timeline', name: '過去／現在／近期未來', count: 3, positions: ['過去脈絡', '當下狀態', '近期未來'], description: '適合用時間軸理解事情如何走到現在。' },
-  { id: 'choice', name: '兩難抉擇', count: 3, positions: ['選項 A', '選項 B', '整體建議'], description: '適合在兩個方向之間做判斷。' },
-  { id: 'relationship', name: '關係透視', count: 3, positions: ['我的狀態', '對方的狀態', '關係建議'], description: '適合釐清關係中的互動、期待與下一步。' },
-  { id: 'career', name: '職涯導航', count: 3, positions: ['目前優勢', '關鍵阻礙', '行動方向'], description: '適合整理工作、學業或創作上的突破口。' },
-  { id: 'inner', name: '內在對話', count: 3, positions: ['表層感受', '深層需求', '溫柔提醒'], description: '適合在混亂時回到自己，辨認真正的需要。' },
-  { id: 'cross', name: '五芒星指引', count: 5, positions: ['此刻核心', '正在支持你', '需要放下', '下一步', '整體訊息'], description: '適合想更全面梳理一件重要事情時使用。' },
+  { id: 'single', name: '單張指引', short: '快速釐清', count: 1, positions: ['核心訊息'], description: '適合快速確認目前最重要的提醒。' },
+  { id: 'timeline', name: '時間之流', short: '看見脈絡', count: 3, positions: ['過去脈絡', '當下狀態', '近期未來'], description: '用時間軸理解事情如何走到現在，以及可能的發展。' },
+  { id: 'choice', name: '兩難抉擇', short: '比較方向', count: 3, positions: ['選項 A', '選項 B', '整體建議'], description: '適合在兩個方向之間做判斷，而不是追求唯一正解。' },
+  { id: 'relationship', name: '關係透視', short: '理解互動', count: 3, positions: ['我的狀態', '關係互動', '關係建議'], description: '適合釐清關係中的互動、期待與下一步。' },
+  { id: 'career', name: '職涯導航', short: '找回重心', count: 3, positions: ['目前優勢', '關鍵阻礙', '行動方向'], description: '適合整理工作、學業或創作上的突破口。' },
+  { id: 'money', name: '金錢與資源', short: '整理現況', count: 3, positions: ['現有資源', '金錢盲點', '務實行動'], description: '適合整理金錢焦慮、資源運用與可實踐的下一步。' },
+  { id: 'social', name: '人際界線', short: '回到關係', count: 3, positions: ['互動現況', '需要說清楚的事', '界線提醒'], description: '適合在友誼、家人與團體關係裡重新找到位置。' },
+  { id: 'inner', name: '內在對話', short: '照見自己', count: 3, positions: ['表層感受', '深層需求', '溫柔提醒'], description: '適合在混亂時回到自己，辨認真正的需要。' },
+  { id: 'cross', name: '五芒星指引', short: '全面梳理', count: 5, positions: ['此刻核心', '正在支持你', '需要放下', '下一步', '整體訊息'], description: '適合想更全面梳理一件重要事情時使用。' },
 ];
 
 const questionGroups = {
-  感情: ['這段關係現在真正的核心是什麼？', '我該繼續等待，還是把重心拉回自己身上？', '這段關係接下來幾個月可能怎麼發展？'],
-  工作: ['我在工作上卡住的真正原因是什麼？', '我該留在現在的環境，還是開始準備轉換？', '如果我想提升收入，最聰明的第一步是什麼？'],
-  自我: ['我現在最需要放下的內在模式是什麼？', '在焦慮底下，我真正害怕的是什麼？', '我該如何重新建立更健康的節奏與界線？'],
+  感情: ['這段關係裡，我最需要先理解自己的什麼感受？', '我可以怎麼讓這段關係更靠近我真正重視的樣子？', '如果我主動溝通，最值得留意的地方是什麼？', '這段關係正在提醒我學會什麼？', '我還沒看見的互動盲點是什麼？', '我可以如何照顧自己，同時好好面對這段關係？', '我反覆被相似的人吸引，背後可能有什麼模式？', '迎接下一段關係前，我想先準備好什麼？'],
+  工作: ['我目前最能發揮的優勢是什麼？', '讓我停在原地的關鍵阻礙是什麼？', '面對轉職，我現在最該準備哪一件事？', '我想經營副業，最適合從哪個小方向開始？', '這兩個工作方向各自會帶來什麼學習？', '我可以怎麼重拾工作上的成就感？', '我與合作夥伴的溝通，最需要調整什麼？', '接下來一個月，我能採取的務實行動是什麼？'],
+  金錢: ['我目前和金錢的關係，最需要被看見的是什麼？', '我對安全感的擔心，正在怎麼影響我的選擇？', '我可以從哪裡更善用現有的資源？', '我想提升收入，下一步最值得投入的是什麼？', '我在哪個消費習慣裡，最需要停下來覺察？', '我對「值得擁有更多」的信念，需要怎麼調整？', '我想建立更穩定的金錢節奏，可以先做什麼？', '這個階段的金錢課題，想教會我什麼？'],
+  人際: ['我在這段關係中，真正想被理解的是什麼？', '我可以怎麼說清楚自己的界線？', '我總是過度付出的模式，從哪裡開始調整？', '這段友誼目前最需要被好好溝通的是什麼？', '我在團體裡感到格格不入，這份感受想提醒我什麼？', '我可以怎麼更自在地接受別人的支持？', '我與家人的互動中，最需要被看見的需求是什麼？', '這段關係裡，我該收回哪一部分的勉強？'],
+  自我: ['我此刻最真實的需要是什麼？', '我感到卡住的地方，正在邀請我看見什麼？', '這份焦慮背後，我真正害怕失去的是什麼？', '我現在最需要放下的內在模式是什麼？', '我可以如何重新建立更健康的節奏？', '這個人生階段，我最重要的課題是什麼？', '我被「不夠好」困住時，可以怎麼對待自己？', '我下一步可以做哪一件小事，讓自己更靠近想要的生活？'],
 };
+
+const questionTips = [
+  ['問現況', '先聚焦一件正在發生的事。'],
+  ['問自己的選擇', '把焦點放回你能回應與行動的部分。'],
+  ['用開放式問法', '少用是非題，多問「我可以怎麼做」。'],
+];
 
 const majorArcana = [
   ['愚者', 'The Fool', '新的開始', '勇敢走向未知，新的可能性正在打開。', '衝動或過度樂觀，可能讓你忽略必要的準備。'],
@@ -56,8 +66,10 @@ function shuffle(cards) { return [...cards].sort(() => Math.random() - 0.5); }
 function positionMeaning(spreadId, position) {
   const meanings = {
     single: { 核心訊息: '這是本次占卜最核心的訊息。' },
-    relationship: { 我的狀態: '看見你此刻帶進這段關係的感受與期待。', 對方的狀態: '提供理解對方目前能量的另一個角度。', 關係建議: '提醒這段關係最值得被好好照顧的方向。' },
+    relationship: { 我的狀態: '看見你此刻帶進這段關係的感受與期待。', 關係互動: '觀察你在這段關係中感受到的互動節奏與模式。', 關係建議: '提醒這段關係最值得被好好照顧的方向。' },
     career: { 目前優勢: '指出你已經具備、可以善用的能力與資源。', 關鍵阻礙: '提醒目前最需要正視或調整的環節。', 行動方向: '提供一個可以開始實踐的方向。' },
+    money: { 現有資源: '看見你已經擁有、可以重新運用的條件。', 金錢盲點: '提醒目前容易忽略的金錢信念或習慣。', 務實行動: '提供一個能讓安全感逐步累積的行動。' },
+    social: { 互動現況: '看見這段關係此刻的氣氛與互動模式。', 需要說清楚的事: '指出最值得被溫和說開的重點。', 界線提醒: '提醒你如何保有自己，也留給彼此空間。' },
     inner: { 表層感受: '看見此刻最容易被感受到的情緒。', 深層需求: '辨認情緒底下真正渴望被回應的需要。', 溫柔提醒: '給自己一個不必逼迫、仍能向前的提醒。' },
     cross: { 此刻核心: '聚焦這件事此刻最重要的本質。', 正在支持你: '看見正在默默幫助你的條件與力量。', 需要放下: '提醒可以暫時鬆開的執著或壓力。', 下一步: '指出眼前最適合採取的行動。', 整體訊息: '把所有線索收束成這次閱讀的核心方向。' },
     timeline: { 過去脈絡: '顯示事情如何發展到現在。', 當下狀態: '指出此刻最重要的狀態。', 近期未來: '顯示若照目前節奏走下去，接下來可能的發展。' },
@@ -231,11 +243,12 @@ export default function App() {
     <div className="app-grid">
       <MagicPanel className="question-panel">
         <p className="panel-kicker">01 · SET YOUR INTENTION</p><h2>先說說你在意的事</h2><p className="panel-intro">選擇觀看方式，然後寫下此刻真正想問的問題。不需要完美，只要誠實。</p>
-        <label>牌陣<select value={spreadId} disabled={loading} onChange={(event) => setSpreadId(event.target.value)}>{spreads.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
+        <div className="spread-picker"><p>選擇牌陣</p><div className="spread-grid">{spreads.map((item) => <button type="button" disabled={loading} key={item.id} onClick={() => setSpreadId(item.id)} className={spreadId === item.id ? 'spread-option active' : 'spread-option'}><b>{item.name}</b><small>{item.count} 張 · {item.short}</small></button>)}</div></div>
+        <div className="question-guide" aria-label="提問小指南"><p>怎麼問，才會更清楚？</p><div>{questionTips.map(([title, copy], index) => <article key={title}><span>0{index + 1}</span><b>{title}</b><small>{copy}</small></article>)}</div></div>
         <label>你的問題<textarea value={question} disabled={loading} onChange={(event) => setQuestion(event.target.value)} placeholder="例如：我接下來三個月最該專注的是什麼？" /></label>
         <div className="category-row">{Object.keys(questionGroups).map((item) => <button type="button" className={category === item ? 'category active' : 'category'} onClick={() => setCategory(item)} key={item}>{item}</button>)}</div>
         <div className="prompt-list">{questionGroups[category].map((item) => <button type="button" onClick={() => setQuestion(item)} key={item}>{item}<span>↗</span></button>)}</div>
-        <div className="spread-info"><span><small>抽牌張數</small><b>{spread.count} 張</b></span><span><small>牌陣焦點</small><b>{spread.positions.join(' · ')}</b></span></div>
+        <div className="spread-info"><span><small>抽牌張數</small><b>{spread.count} 張</b></span><span><small>位置焦點</small><b>{spread.positions.join(' · ')}</b></span></div><p className="spread-description">{spread.description}</p>
         <div className="actions"><button className="draw-button" disabled={loading} onClick={draw}>{loading ? '正在翻閱牌面…' : '抽牌解讀'} <span>✦</span></button><button className="reset-button" disabled={loading} onClick={reset}>重設</button></div>
         {error && <p className="error">{error}</p>}
       </MagicPanel>
