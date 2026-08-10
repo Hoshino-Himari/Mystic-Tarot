@@ -1,0 +1,60 @@
+.spread-picker { margin-top: 22px; }
+
+.spread-picker > p,
+.question-guide > p {
+  margin-bottom: 11px;
+  font-size: 13px;
+  letter-spacing: .08em;
+}
+
+.spread-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11px;
+}
+
+.spread-option {
+  min-height: 158px;
+  padding: 15px;
+  border-radius: 14px;
+}
+
+.spread-option b,
+.spread-option span,
+.spread-option small,
+.spread-option em {
+  display: block;
+}
+
+.spread-option b {
+  color: #f1ecf4;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.spread-option span {
+  margin-top: 5px;
+  color: #efca76;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.spread-option small {
+  margin-top: 10px;
+  color: #c3bbcf;
+  font-size: 13px;
+  line-height: 1.6;
+  letter-spacing: 0;
+}
+
+.spread-option em {
+  margin-top: 8px;
+  color: #aaa1b7;
+  font-size: 12px;
+  line-height: 1.55;
+  font-style: normal;
+}
+
+@media (max-width: 600px) {
+  .spread-grid { grid-template-columns: 1fr; }
+}
