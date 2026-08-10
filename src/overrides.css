@@ -1,5 +1,21 @@
 .spread-picker { margin-top: 22px; }
 
+select {
+  width: 100%;
+  margin-top: 9px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, .11);
+  border-radius: 13px;
+  outline: 0;
+  background: rgba(7, 6, 15, .54);
+  color: #faf6ee;
+}
+
+select:focus {
+  border-color: rgba(234, 193, 107, .65);
+  box-shadow: 0 0 0 3px rgba(234, 193, 107, .09);
+}
+
 .spread-picker > p,
 .question-guide > p {
   margin-bottom: 11px;
@@ -23,6 +39,65 @@
 .spread-option small,
 .spread-option em {
   display: block;
+}
+
+.spread-detail {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0 18px;
+  padding: 18px;
+  border: 1px solid rgba(234, 193, 107, .34);
+  border-radius: 15px;
+  background: linear-gradient(135deg, rgba(234, 193, 107, .09), rgba(120, 93, 179, .08));
+}
+
+.spread-detail p {
+  margin: 0;
+  color: #f5d991;
+  font-size: 19px;
+  font-weight: 800;
+}
+
+.spread-detail b {
+  color: #f3ecfa;
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+.spread-detail span,
+.spread-detail small {
+  color: #d1c9dc;
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+.spread-detail small {
+  color: #b7aecd;
+}
+
+.tarot-card {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+.tarot-card:not(.is-revealed):hover {
+  transform: translateY(-5px) rotate(-.5deg);
+}
+
+.tarot-card.is-revealed {
+  cursor: default;
+}
+
+.reveal-note {
+  margin: 16px 0 -8px;
+  color: #c8c0d5;
+  font-size: 14px;
+  line-height: 1.7;
 }
 
 .spread-option b {

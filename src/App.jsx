@@ -71,7 +71,7 @@ function positionMeaning(spreadId, position) {
 }
 function localReading(cards) {
   const lead = cards[0];
-  const reversed = cards.find((card) => card.reversed);
+  const reversed = cards.find((card) => card.isReversed);
   return {
     summary: `${lead.nameZh} 指出你現在最需要正視的主題是「${lead.keywords}」。${cards.filter((card) => card.arcana === '大阿爾克那').length ? '這件事帶著明顯的轉折意義。' : '這組牌更接近日常節奏與眼前選擇。'}`,
     action: `先從「${lead.position}」開始最有效。${lead.nameZh} 的方向是：${lead.upright} 把這個提醒化成一個可完成的小動作。`,
@@ -171,37 +171,45 @@ function ParticleTitle() {
   return <div className="particle-title-wrap"><h1 className="sr-only">神秘塔羅</h1><canvas ref={canvasRef} className="particle-title" onPointerMove={movePointer} onPointerLeave={() => { pointerRef.current.active = false; }} aria-label="可互動的粒子文字：神秘塔羅" /></div>;
 }
 
-function TarotCard({ card, revealed, index }) {
-  return <article className={`tarot-card ${revealed ? 'is-revealed' : ''}`} style={{ '--delay': `${index * 120}ms` }}>
+function TarotCard({ card, revealed, index, onReveal }) {
+  return <button type="button" className={`tarot-card ${revealed ? 'is-revealed' : ''}`} style={{ '--delay': `${index * 120}ms` }} onClick={onReveal} disabled={revealed} aria-label={revealed ? `${card.position}：${card.nameZh}` : `翻開${card.position}`}>
     <div className="tarot-card__inner">
       <div className="tarot-card__back"><span className="card-star">✦</span><span>{card.position}</span><small>ARCANA</small></div>
       <div className="tarot-card__front">
         <span className="card-position">{card.position}</span>
         <div><span className="card-moon">☾</span><h3>{card.nameZh}</h3><p>{card.nameEn}</p></div>
-        <div><span className={card.reversed ? 'card-orientation reversed' : 'card-orientation'}>{card.reversed ? '逆位' : '正位'}</span><p className="card-copy">{card.reversed ? card.reversed : card.upright}</p></div>
+        <div><span className={card.isReversed ? 'card-orientation reversed' : 'card-orientation'}>{card.isReversed ? '逆位' : '正位'}</span><p className="card-copy">{card.isReversed ? card.reversed : card.upright}</p></div>
       </div>
     </div>
-  </article>;
+  </button>;
 }
 
 export default function App() {
-  const [spreadId, setSpreadId] = useState('single');
+  const [spreadId, setSpreadId] = useState(spreads[0].id);
   const [question, setQuestion] = useState('');
   const [category, setCategory] = useState('感情');
   const [cards, setCards] = useState([]);
   const [reading, setReading] = useState(null);
-  const [revealed, setRevealed] = useState(false);
+  const [revealedCards, setRevealedCards] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const readingRequestedRef = useRef(false);
   const spread = spreads.find((item) => item.id === spreadId) ?? spreads[0];
+  const isChoosingCards = cards.length > 0 && !reading;
 
   async function draw() {
     if (!question.trim()) { setError('先寫下你想問的事，牌面才知道從哪裡開始。'); return; }
-    setError(''); setReading(null); setLoading(true); setRevealed(false);
-    const selected = shuffle(deck).slice(0, spread.count).map((card, index) => ({ ...card, position: spread.positions[index], positionMeaning: positionMeaning(spread.id, spread.positions[index]), reversed: Math.random() < 0.35 }));
+    setError(''); setReading(null); setLoading(true); setRevealedCards([]); readingRequestedRef.current = false;
+    const selected = shuffle(deck).slice(0, spread.count).map((card, index) => ({ ...card, position: spread.positions[index], positionMeaning: positionMeaning(spread.id, spread.positions[index]), isReversed: Math.random() < 0.35 }));
     setCards(selected);
     await sleep(520);
-    setRevealed(true);
+    setLoading(false);
+  }
+
+  async function finishReading(selected) {
+    if (readingRequestedRef.current) return;
+    readingRequestedRef.current = true;
+    setLoading(true);
     let nextReading = localReading(selected);
     try {
       const response = await fetch('/api/reading', {
@@ -214,9 +222,9 @@ export default function App() {
             nameZh: card.nameZh,
             nameEn: card.nameEn,
             position: card.position,
-            reversed: card.reversed,
+            reversed: card.isReversed,
             keywords: card.keywords,
-            meaning: card.reversed ? card.reversed : card.upright,
+            meaning: card.isReversed ? card.reversed : card.upright,
           })),
         }),
       });
@@ -226,7 +234,15 @@ export default function App() {
     await sleep(240);
     setReading(nextReading); setLoading(false);
   }
-  function reset() { setQuestion(''); setCards([]); setReading(null); setError(''); setRevealed(false); }
+
+  function revealCard(index) {
+    if (loading || revealedCards.includes(index)) return;
+    const next = [...revealedCards, index];
+    setRevealedCards(next);
+    if (next.length === cards.length) finishReading(cards);
+  }
+
+  function reset() { setQuestion(''); setCards([]); setReading(null); setError(''); setRevealedCards([]); readingRequestedRef.current = false; }
 
   return <main className="site-shell">
     <div className="star-field" aria-hidden="true" />
@@ -235,18 +251,18 @@ export default function App() {
     <div className="app-grid">
       <MagicPanel className="question-panel">
         <p className="panel-kicker">01 · SET YOUR INTENTION</p><h2>先說說你在意的事</h2><p className="panel-intro">選擇觀看方式，然後寫下此刻真正想問的問題。不需要完美，只要誠實。</p>
-        <div className="spread-picker"><p>選擇牌陣</p><div className="spread-grid">{spreads.map((item) => <button type="button" disabled={loading} key={item.id} onClick={() => setSpreadId(item.id)} className={spreadId === item.id ? 'spread-option active' : 'spread-option'}><b>{item.name}</b><span>{item.count} 張牌</span><small>{item.usage}</small><em>位置：{item.positions.join(' · ')}</em></button>)}</div></div>
+        <label>選擇牌陣<select value={spreadId} disabled={loading || isChoosingCards} onChange={(event) => setSpreadId(event.target.value)}>{spreads.map((item) => <option key={item.id} value={item.id}>{item.name} · {item.count} 張牌</option>)}</select></label><div className="spread-detail"><p>{spread.name} · {spread.count} 張牌</p><b>{spread.usage}</b><span>{spread.description}</span><small>抽牌位置：{spread.positions.join(' · ')}</small></div>
         <div className="question-guide" aria-label="提問小指南"><p>怎麼問，才會更清楚？</p><div>{questionTips.map(([title, copy], index) => <article key={title}><span>0{index + 1}</span><b>{title}</b><small>{copy}</small></article>)}</div></div>
-        <label>你的問題<textarea value={question} disabled={loading} onChange={(event) => setQuestion(event.target.value)} placeholder="例如：我接下來三個月最該專注的是什麼？" /></label>
-        <div className="category-row">{Object.keys(questionGroups).map((item) => <button type="button" className={category === item ? 'category active' : 'category'} onClick={() => setCategory(item)} key={item}>{item}</button>)}</div>
-        <div className="prompt-list">{questionGroups[category].map((item) => <button type="button" onClick={() => setQuestion(item)} key={item}>{item}<span>↗</span></button>)}</div>
+        <label>你的問題<textarea value={question} disabled={loading || isChoosingCards} onChange={(event) => setQuestion(event.target.value)} placeholder="例如：我接下來三個月最該專注的是什麼？" /></label>
+        <div className="category-row">{Object.keys(questionGroups).map((item) => <button type="button" disabled={loading || isChoosingCards} className={category === item ? 'category active' : 'category'} onClick={() => setCategory(item)} key={item}>{item}</button>)}</div>
+        <div className="prompt-list">{questionGroups[category].map((item) => <button type="button" disabled={loading || isChoosingCards} onClick={() => setQuestion(item)} key={item}>{item}<span>↗</span></button>)}</div>
         <div className="spread-info"><span><small>抽牌張數</small><b>{spread.count} 張</b></span><span><small>抽牌位置</small><b>{spread.positions.join(' · ')}</b></span></div><p className="spread-description">{spread.description}</p>
-        <div className="actions"><button className="draw-button" disabled={loading} onClick={draw}>{loading ? '正在翻閱牌面…' : '抽牌解讀'} <span>✦</span></button><button className="reset-button" disabled={loading} onClick={reset}>重設</button></div>
+        <div className="actions"><button className="draw-button" disabled={loading || isChoosingCards} onClick={draw}>{loading ? '正在翻閱牌面…' : isChoosingCards ? '請依序翻開牌面' : '抽牌解讀'} <span>✦</span></button><button className="reset-button" disabled={loading} onClick={reset}>重設</button></div>
         {error && <p className="error">{error}</p>}
       </MagicPanel>
       <MagicPanel className="reading-panel">
-        <div className="reading-head"><div><p className="panel-kicker">02 · THE READING</p><h2>{cards.length ? '牌面正在回應你' : '牌面會在這裡展開'}</h2></div><span className={loading ? 'status busy' : 'status'}><i />{loading ? '整理解讀中' : '靜候你的問題'}</span></div>
-        {cards.length ? <div className="card-grid">{cards.map((card, index) => <TarotCard key={`${card.nameZh}-${index}`} card={card} index={index} revealed={revealed} />)}</div> : <div className="empty-card"><span>☾</span><b>尚未抽牌</b><p>在左側留下問題，牌面就會從這裡開始回答。</p><small>MYSTIC TAROT</small></div>}
+        <div className="reading-head"><div><p className="panel-kicker">02 · THE READING</p><h2>{cards.length ? '輪到你翻開牌面' : '牌面會在這裡展開'}</h2></div><span className={loading ? 'status busy' : 'status'}><i />{loading ? '整理解讀中' : cards.length ? `${revealedCards.length} / ${cards.length} 張已翻開` : '靜候你的問題'}</span></div>
+        {cards.length ? <><p className="reveal-note">依序點選每張牌翻開；最後一張翻開後，解讀會自動出現。</p><div className="card-grid">{cards.map((card, index) => <TarotCard key={`${card.nameZh}-${index}`} card={card} index={index} revealed={revealedCards.includes(index)} onReveal={() => revealCard(index)} />)}</div></> : <div className="empty-card"><span>☾</span><b>尚未抽牌</b><p>在左側留下問題，牌面就會從這裡開始回答。</p><small>MYSTIC TAROT</small></div>}
         {reading && <div className="reading-result">
           <article><small>整體解讀</small><p>{reading.summary}</p></article><article><small>下一步建議</small><p>{reading.action}</p></article><article><small>需要留意</small><p>{reading.caution}</p></article>
         </div>}
