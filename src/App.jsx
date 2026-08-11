@@ -104,10 +104,32 @@ const numerologyMeanings = {
   9: ['夢想家', '慈悲、理想與給予。你容易看見更大的圖像，也願意為別人多走一步；課題是學會收尾與收下——接受也是給予的一部分。'],
 };
 
-const masterNotes = {
-  11: '計算過程出現卓越數 11：你的直覺與感受力比一般 2 號人更敏銳，容易接收靈感與他人的情緒，記得留時間讓自己安靜下來。',
-  22: '計算過程出現卓越數 22：你有把宏大願景落地的潛力，是「建築師」等級的 4；課題是別被完美藍圖困住，從小規模開始蓋。',
-  33: '計算過程出現卓越數 33：你是帶著更深大愛與療癒特質的 6；課題是在服務他人的同時，守住自己的能量邊界。',
+const cardForNumber = (value) => majorArcana[value === 22 ? 0 : value];
+
+// 塔羅命數：生日加總（>22 再加總）對應大阿爾克那的處事態度，[優勢, 劣勢]。
+const destinyMeanings = {
+  0: ['天生自由、樂觀率真，勇於嘗試新事物、不被過去綁住，凡事願意「先做了再說」，常為身邊的人帶來新鮮感與行動力。', '熱度來得快去得也快，計畫容易做一半就跳去下一個；有時太天真、缺乏防備而吃虧，也可能因衝動做出讓自己後悔的決定。'],
+  1: ['多才多藝、行動力強，腦筋轉得快，擅長整合手邊資源把想法做出來；表達與說服力出色，適合創業、行銷與業務型的舞台。', '什麼都想做，常常同時開好幾個坑卻難收尾；太相信自己的能力時會聽不進建議，也可能給人「話術強、不夠真誠」的印象。'],
+  2: ['直覺敏銳、觀察力強，內心世界豐富，容易看穿事情的本質與他人的真實情緒；帶點神祕氣質，適合研究、洞察與心靈領域，多半看破不說破。', '習慣把事情放在心裡、不擅長主動表達需求，讓人覺得猜不透；想太多容易內耗，遇到衝突傾向退縮或冷處理，誤會反而越積越深。'],
+  3: ['溫暖、有同理心與藝術天分，懂得享受生活也懂得照顧人；包容力強、誰都處得來，是身邊人的能量補給站，在創作、美感與療癒領域特別有優勢。', '容易把別人的事當自己的事操心，控制慾與佔有慾會不自覺浮現；情緒起伏較大，有時會用「我都是為你好」給對方壓力。'],
+  4: ['天生的領導者，邏輯清晰、執行力強、扛得住事，是團隊裡讓人安心的存在；原則感強、有責任，遇到危機反而更冷靜，會主動站出來承擔。', '固執、不易妥協，容易顯得嚴肅、不近人情；習慣用做事代替說愛，親近的人不易感受到溫度，嚴重時會因太獨裁而變得難相處。'],
+  5: ['穩重、值得信賴，喜歡有架構、有系統的事物，是朋友想諮詢意見的「智慧長者」；重視傳統與規則，做事踏實不冒進，適合教學、顧問與傳承。', '偏保守，對新觀念、新做法接受得比較慢，容易卡在「以前都是這樣做」的框架裡；有時會不自覺說教，或用自己的標準要求別人。'],
+  6: ['人緣好、有審美眼光，重視關係的品質，擅長在對話中激盪靈感；同理心強，能看見關係裡彼此的需求，在藝術、創意與企劃上有天分。', '優柔寡斷是最大課題，面對選擇常常糾結很久；太在意他人感受而委屈自己，感情裡容易陷入「同時被吸引、又害怕做決定」的拉扯。'],
+  7: ['目標感與行動力一流，認定的事會排除萬難往前衝；自律、有勝負心，衝刺時帶著毫無畏懼的信心，適合需要突破與業績的戰場。', '太急、太想贏，容易忽略細節與身邊人的感受；習慣自己握方向盤、不輕易交出選擇權，聽不太進別人的意見，也容易把自己逼到極限。'],
+  8: ['外表溫柔、內在堅韌，情緒管理能力強；遇到壓力能用柔軟的方式化解，是那種不靠強硬、靠氣場就能讓事情前進的人。', '太會忍，情緒常往肚裡吞，爆發時連自己都嚇一跳；在關係中過度包容、把對方的問題也攬到自己身上，久了累積疲憊與委屈。'],
+  9: ['思考深、有智慧，獨處時反而最有生產力；不隨波逐流、有自己的人生節奏，能在安靜中看清事情的本質，適合研究與深度領域。', '社交是一種消耗，容易被貼上高冷、難親近的標籤；遇到問題偏好自己鑽研、不願求助，有時會鑽牛角尖，也較難融入熱鬧的群體。'],
+  10: ['適應力極強、懂得順勢而為，能在變動中找到自己的機會；視野大、看得見因果循環，運氣通常不差，常在對的時間遇到對的人與事。', '有時太相信「命運自有安排」而缺乏主動，把該做的決定推給時機；生活節奏起伏大，需要刻意建立穩定的習慣，才不會被環境牽著走。'],
+  11: ['公正、客觀、邏輯清晰，是大家遇到糾紛時最想找的「裁判」；有原則、誠實、重視因果與責任，適合法律、財務、決策與管理。', '太理性，有時顯得冷漠、難以共情；對是非黑白看得很重，容易在心裡評判他人，也用高標準逼自己，長期活在「不夠好」的壓力裡。'],
+  12: ['擅長換位思考，看得見一般人看不到的另一面；有奉獻精神、耐受性強、能等待，內在有很深的覺察，適合療癒、諮商與需要沉澱的創作。', '太被動，常用犧牲自己來成全別人、事後又覺得不平衡；明知該做決定卻一拖再拖，甚至說服自己吃苦當吃補，小心拖到來不及轉彎。'],
+  13: ['「重生力」強大，敢斷捨離、敢放下不適合的人事物，能在結束中看見開始；不被過去綁住，面對劇變反而比誰都更快進入狀態。', '態度有時太絕對，要結束就一刀兩斷、少了轉圜空間；在關係裡容易顯得突然與冷冽，也可能因常「打掉重來」而讓生活缺乏穩定。'],
+  14: ['平衡感極佳，能在不同立場、不同個性之間找到中庸之道；溫和、有耐心、療癒力強，是團體的潤滑劑，擅長協調與整合，四兩撥千斤。', '太想兩邊都顧好，反而顯得不夠果決、立場模糊；常因不想得罪人而稀釋自己真實的想法，久了會讓人想問「你到底站哪邊」。'],
+  15: ['對慾望誠實、知道自己要什麼也敢去爭取；魅力強、有商業頭腦，能把「想要」化成實際行動，運用得好能累積可觀的豐盛。', '容易被慾望牽著走，有上癮傾向——可能是物質、感情、工作或手機；容易陷入「明知不對卻離不開」的綁定，需要刻意練習鬆綁。'],
+  16: ['敢打破舊框架，不怕改變、不怕砍掉重練；抗壓性高，能在危機中找到生機，常在大破之後迎來大立，衝擊來了也能處之泰然。', '人生起伏較大，容易經歷突如其來的變動；小心因捨不得放手而讓崩塌重複發生，或在情緒衝動時親手推倒好不容易建立的東西。'],
+  17: ['有夢想、有願景、有療癒力，是身邊人的「希望製造機」；純粹樂觀、相信美好會發生，適合創作、品牌與自媒體，常莫名獲得指引。', '太理想化，容易忽略現實層面的考量，常常光想不做、以為事情自己會變好；也容易把人想得太美，期待落空時比誰都受傷。'],
+  18: ['直覺、想像與感受力都極強，能精準讀出情緒與氛圍，看人很準；有藝術天分與神祕感，適合創作、心理、靈性與文字，也很適合風險管理。', '想太多、容易焦慮，常在事情還沒發生前先把自己嚇壞；容易被情緒帶著走、在迷霧中迷失方向，需要刻意建立「回到現實」的習慣。'],
+  19: ['樂觀、自信、有活力，走到哪都能把氣氛帶起來；有魅力、有感染力，很會鼓舞人心，單純好相處、不太計較，是團體裡的啦啦隊。', '有時陽光過了頭，會忽略事情的陰暗面與他人的低潮，顯得少根筋；遇到挫敗時內心其實比外表脆弱，也不容易承認「這次真的不行」。'],
+  20: ['覺察力強、有使命感，常聽見「我是不是該做點什麼」的內在召喚；能反省、能轉化，常在某個時刻突然醒來，把人生帶進全新階段。', '容易自我批判，用放大鏡檢視過去的選擇，一直活在「早知道就⋯⋯」裡；偶爾也會用評斷的眼光看別人，需要練習更多接納。'],
+  21: ['完整、有大局觀，凡事要收尾、要圓滿才甘心，想法周全、不會半途而廢；能整合各方資源、視野開闊，是「交給他就放心」的類型。', '完美主義是最大課題，對自己與他人的期待都高，沒達到就給自己很大壓力；放不下、不到最後關頭不鬆手，需要練習「夠好就好」。'],
 };
 
 function digitSum(value) { return String(value).split('').reduce((total, ch) => total + Number(ch), 0); }
@@ -129,13 +151,12 @@ function NumerologyPage() {
     const digits = `${y}${String(m).padStart(2, '0')}${String(d).padStart(2, '0')}`;
     const sums = [digitSum(digits)];
     while (sums[sums.length - 1] > 9) sums.push(digitSum(sums[sums.length - 1]));
-    const lifeNumber = sums[sums.length - 1];
-    const personalityNumber = sums.find((sum) => sum <= 22);
-    const masters = [...new Set(sums.filter((sum) => sum === 11 || sum === 22 || sum === 33))];
+    const destinyIndex = sums.findIndex((sum) => sum <= 22);
     setResult({
-      digits, sums, lifeNumber, masters,
-      soulCard: majorArcana[lifeNumber],
-      personalityCard: majorArcana[personalityNumber === 22 ? 0 : personalityNumber],
+      digits, sums,
+      lifeNumber: sums[sums.length - 1],
+      destinyNumber: sums[destinyIndex],
+      refs: sums.slice(destinyIndex + 1), // 命數 10 以上要同時參考的後續加總
     });
   }
 
@@ -143,11 +164,10 @@ function NumerologyPage() {
     `${result.digits.split('').join(' + ')} = ${result.sums[0]}`,
     ...result.sums.slice(0, -1).map((sum, index) => `${String(sum).split('').join(' + ')} = ${result.sums[index + 1]}`),
   ] : [];
-  const sameCard = result && result.soulCard === result.personalityCard;
 
   return <div className="app-grid">
     <MagicPanel className="numerology-panel">
-      <p className="panel-kicker">01 · YOUR BIRTH NUMBERS</p><h2>輸入你的西元生日</h2><p className="panel-intro">生命靈數把生日的每個數字加總、再歸位成 1–9，映照你這一生的天賦與課題；中間的加總還會對應一張大阿爾克那，作為你的塔羅靈魂牌。</p>
+      <p className="panel-kicker">01 · YOUR BIRTH NUMBERS</p><h2>輸入你的西元生日</h2><p className="panel-intro">把生日的每個數字加總，超過 22 就再加總一次——得到的數字對應一張大阿爾克那，就是你的塔羅命數，映照你不自覺的處事態度。繼續歸位到 1–9，則是你的生命靈數。</p>
       <div className="field"><span className="field-label">西元生日</span>
         <div className="birth-row">
           <input inputMode="numeric" maxLength={4} placeholder="1998" aria-label="西元年" value={year} onChange={(event) => setYear(event.target.value.replace(/\D/g, ''))} />
@@ -160,24 +180,33 @@ function NumerologyPage() {
       <div className="actions"><MagicButton className="draw-button" onClick={calculate}>計算生命靈數 <span>✦</span></MagicButton></div>
       {error && <p className="error">{error}</p>}
       {result && <div className="calc-steps" aria-label="計算過程">{steps.map((line) => <div key={line}>{line}</div>)}</div>}
-      {result && result.masters.map((master) => <p className="master-note" key={master}>{masterNotes[master]}</p>)}
     </MagicPanel>
     <MagicPanel className="numerology-result">
-      <p className="panel-kicker">02 · LIFE PATH NUMBER</p><h2>{result ? '你的生命靈數' : '結果會在這裡展開'}</h2>
-      {!result && <div className="empty-card"><span>☾</span><b>尚未計算</b><p>在左側輸入生日，數字與你的靈魂牌就會在這裡揭曉。</p><small>LIFE PATH NUMBER</small></div>}
+      <p className="panel-kicker">02 · TAROT DESTINY NUMBER</p><h2>{result ? '你的塔羅命數' : '結果會在這裡展開'}</h2>
+      {!result && <div className="empty-card"><span>☾</span><b>尚未計算</b><p>在左側輸入生日，你的塔羅命數與生命靈數就會在這裡揭曉。</p><small>TAROT DESTINY NUMBER</small></div>}
       {result && <>
-        <div className="life-number"><b>{result.lifeNumber}</b><div><h3>{numerologyMeanings[result.lifeNumber][0]}</h3><p>{numerologyMeanings[result.lifeNumber][1]}</p></div></div>
-        <div className="soul-cards">
-          <figure className="soul-card">
-            <div className="soul-card__art"><img src={result.soulCard.imageSrc} alt={result.soulCard.nameZh} /></div>
-            <figcaption><small>靈魂牌 · 內在渴望</small><b>{result.soulCard.nameZh}</b><span>{result.soulCard.keywords}</span><p>{result.soulCard.upright}</p></figcaption>
-          </figure>
-          {!sameCard && <figure className="soul-card">
-            <div className="soul-card__art"><img src={result.personalityCard.imageSrc} alt={result.personalityCard.nameZh} /></div>
-            <figcaption><small>人格牌 · 外在樣貌</small><b>{result.personalityCard.nameZh}</b><span>{result.personalityCard.keywords}</span><p>{result.personalityCard.upright}</p></figcaption>
-          </figure>}
+        <div className="destiny-block">
+          <div className="destiny-art"><img src={cardForNumber(result.destinyNumber).imageSrc} alt={cardForNumber(result.destinyNumber).nameZh} /></div>
+          <div className="destiny-copy">
+            <small>塔羅命數 {result.destinyNumber}{result.destinyNumber === 22 ? '（加總 22 對應 0 愚人）' : ''}</small>
+            <h3>{cardForNumber(result.destinyNumber).nameZh}<span>{cardForNumber(result.destinyNumber).nameEn}</span></h3>
+            <p className="destiny-pro"><b>優勢</b>{destinyMeanings[result.destinyNumber === 22 ? 0 : result.destinyNumber][0]}</p>
+            <p className="destiny-con"><b>劣勢</b>{destinyMeanings[result.destinyNumber === 22 ? 0 : result.destinyNumber][1]}</p>
+          </div>
         </div>
-        {sameCard ? <p className="soul-note">你的靈魂牌與人格牌是同一張——內在渴望與外在樣貌一致，你給人的印象，就是你真正想成為的樣子。</p> : <p className="soul-note">人格牌是別人眼中的你，靈魂牌是你內在真正的渴望；兩張一起看，就是「你如何走向自己」的路線圖。</p>}
+        {result.refs.length > 0 && <div className="ref-cards">
+          <p className="ref-title">命數 {result.destinyNumber} 可以再加總——請同時參考{result.refs.length > 1 ? '這幾張' : '這張'}牌的特質：</p>
+          {result.refs.map((ref) => <div className="ref-card" key={ref}>
+            <div className="ref-card__art"><img src={cardForNumber(ref).imageSrc} alt={cardForNumber(ref).nameZh} /></div>
+            <div className="ref-card__copy">
+              <b>{ref} · {cardForNumber(ref).nameZh}</b>
+              <p><span>優勢</span>{destinyMeanings[ref === 22 ? 0 : ref][0]}</p>
+              <p><span>劣勢</span>{destinyMeanings[ref === 22 ? 0 : ref][1]}</p>
+            </div>
+          </div>)}
+        </div>}
+        <div className="life-number life-number--mini"><b>{result.lifeNumber}</b><div><h3>生命靈數 · {numerologyMeanings[result.lifeNumber][0]}</h3><p>{numerologyMeanings[result.lifeNumber][1]}</p></div></div>
+        <p className="soul-note">命數反映的是你不自覺的決策方式與處事態度——優勢和劣勢往往是同一件事的兩面，看見了，就能在需要的時候提醒自己調整。</p>
       </>}
     </MagicPanel>
   </div>;
