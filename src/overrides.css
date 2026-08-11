@@ -359,3 +359,185 @@ textarea {
   .dialog-artwork { height: min(56dvh, 600px); }
   .dialog-content h2 { font-size: 40px; }
 }
+
+.reading-stage {
+  position: fixed;
+  z-index: 20;
+  inset: 0;
+  overflow: auto;
+  padding: clamp(20px, 4vw, 62px);
+  background:
+    radial-gradient(ellipse at 16% 16%, rgba(62, 88, 162, .22), transparent 34rem),
+    radial-gradient(ellipse at 84% 72%, rgba(104, 52, 139, .18), transparent 38rem),
+    rgba(4, 6, 18, .91);
+  -webkit-backdrop-filter: blur(18px) saturate(115%);
+  backdrop-filter: blur(18px) saturate(115%);
+}
+
+.reading-stage::before {
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  content: '';
+  opacity: .58;
+  background-image:
+    radial-gradient(circle, rgba(232, 240, 255, .7) 0 .7px, transparent 1px),
+    radial-gradient(circle, rgba(224, 186, 111, .45) 0 .55px, transparent .9px);
+  background-size: 189px 189px, 317px 317px;
+  background-position: 38px 63px, 142px 29px;
+}
+
+.reading-stage__top {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  width: min(1180px, 100%);
+  margin: 0 auto;
+}
+
+.reading-stage__top h1 {
+  margin: 7px 0;
+  color: #f7f2e7;
+  font-size: clamp(26px, 4vw, 48px);
+  letter-spacing: .035em;
+}
+
+.reading-stage__top h1:focus { outline: none; }
+.reading-stage__top > div > p:last-child { margin: 0; color: #bcb9cc; font-size: 14px; }
+
+.stage-back {
+  align-self: flex-start;
+  padding: 11px 15px;
+  border: 1px solid rgba(228, 238, 255, .22);
+  border-radius: 12px;
+  background: rgba(14, 19, 42, .58);
+  color: #edeaf1;
+}
+
+.stage-back:hover,
+.stage-back:focus-visible { border-color: rgba(244, 211, 138, .8); outline: none; }
+
+.stage-instruction {
+  width: min(1180px, 100%);
+  margin: 18px auto 0;
+  color: #e6cf93;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.spread-layout {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-areas: "a b c";
+  align-items: center;
+  justify-items: center;
+  gap: clamp(14px, 3.6vw, 54px);
+  width: min(1180px, 100%);
+  min-height: min(650px, calc(100dvh - 180px));
+  margin: 0 auto;
+  padding: clamp(24px, 4vw, 58px) 0;
+}
+
+.spread-timeline { grid-template-areas: "a b c"; }
+.spread-holy-triangle { grid-template-areas: ". a ." "b . c"; }
+.spread-core { grid-template-areas: ". b ." "c a d"; }
+.spread-choice { grid-template-areas: "a . b" "c . d" ". e ."; }
+.spread-love { grid-template-areas: "a . c" "b . d" ". e ."; }
+
+.slot-1 { grid-area: a; }
+.slot-2 { grid-area: b; }
+.slot-3 { grid-area: c; }
+.slot-4 { grid-area: d; }
+.slot-5 { grid-area: e; }
+
+.spread-slot {
+  position: relative;
+  width: clamp(145px, 20vw, 294px);
+  padding-top: 26px;
+}
+
+.stage-card-label {
+  position: absolute;
+  z-index: 4;
+  top: 0;
+  left: 50%;
+  max-width: calc(100% - 12px);
+  padding: 7px 11px;
+  overflow: hidden;
+  border: 1px solid rgba(230, 239, 255, .25);
+  border-radius: 999px;
+  background: rgba(22, 29, 61, .66);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, .22), inset 0 1px rgba(255, 255, 255, .13);
+  color: #f3d58d;
+  font: 700 11px "Noto Sans TC", sans-serif;
+  letter-spacing: .08em;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.spread-slot.is-active .stage-card-label { animation: label-float 2.8s ease-in-out infinite; }
+
+.reading-stage .tarot-card,
+.reading-stage .tarot-card__inner {
+  width: 100%;
+  min-height: 0;
+  aspect-ratio: 2 / 3;
+}
+
+.reading-stage .tarot-card__front,
+.reading-stage .tarot-card__back { padding: clamp(10px, 1.5vw, 16px); }
+.reading-stage .tarot-card__front { gap: 8px; }
+.reading-stage .card-artwork { flex: 1; min-height: 0; }
+.reading-stage .card-copy,
+.reading-stage .tarot-card h3 + p { display: none; }
+.reading-stage .tarot-card h3 { margin: 0; font-size: clamp(16px, 2vw, 25px); }
+.reading-stage .tarot-card.is-locked { opacity: .42; filter: saturate(.55); }
+.reading-stage .tarot-card.is-locked .tarot-card__tilt { cursor: not-allowed; }
+
+.stage-reading-result {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  width: min(980px, 100%);
+  margin: 0 auto 18px;
+}
+
+.stage-reading-result article {
+  padding: 16px;
+  border: 1px solid rgba(219, 230, 255, .15);
+  border-radius: 16px;
+  background: rgba(12, 16, 38, .55);
+  box-shadow: inset 0 1px rgba(255, 255, 255, .07);
+}
+
+.stage-reading-result small { color: #ead19a; font: 10px "DM Mono", monospace; letter-spacing: .1em; }
+.stage-reading-result p { margin: 9px 0 0; color: #e6e3ec; font-size: 14px; line-height: 1.75; }
+.stage-disclaimer { width: min(980px, 100%); margin: 0 auto; color: #a39eb2; font-size: 12px; line-height: 1.7; text-align: center; }
+
+@keyframes label-float {
+  50% { transform: translate(-50%, -5px); text-shadow: 0 0 16px rgba(242, 211, 141, .42); }
+}
+
+@media (max-width: 760px) {
+  .reading-stage { padding: 18px 12px 34px; }
+  .reading-stage__top { gap: 12px; }
+  .reading-stage__top h1 { font-size: 24px; }
+  .stage-back { padding: 9px 10px; font-size: 12px; }
+  .stage-instruction { font-size: 13px; }
+  .spread-layout { gap: 12px 6px; min-height: 0; padding: 32px 0 26px; }
+  .spread-slot { width: min(29vw, 170px); padding-top: 23px; }
+  .stage-card-label { padding: 5px 7px; font-size: 9px; letter-spacing: .03em; }
+  .reading-stage .tarot-card__front,
+  .reading-stage .tarot-card__back { padding: 8px; border-radius: 11px; }
+  .reading-stage .card-position { padding: 3px 5px; font-size: 8px; }
+  .reading-stage .tarot-card h3 { font-size: 14px; }
+  .reading-stage .card-orientation { padding: 3px 5px; font-size: 8px; }
+  .stage-reading-result { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spread-slot.is-active .stage-card-label { animation: none; }
+}
