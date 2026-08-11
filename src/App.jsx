@@ -6,6 +6,9 @@ const spreads = [
   { id: 'core', name: '直指核心', count: 4, positions: ['問題核心', '障礙', '對策', '優勢'], description: '把困住你的關鍵、可用資源與下一步放在同一張圖裡。', usage: '適合：某件事一直沒有起色，想知道原因與能做的事。' },
   { id: 'choice', name: '二選一與可能結果', count: 5, positions: ['選項 A 的狀態', '選項 B 的狀態', 'A 可能結果', 'B 可能結果', '我的狀態'], description: '比較兩個方向各自的條件與可能發展，協助你做判斷。', usage: '適合：工作機會、學習方向等具體選擇；不是替你決定。' },
   { id: 'love', name: '感情萬用牌陣', count: 5, positions: ['我的狀態', '我對關係的態度', '對方的狀態', '對方對關係的態度', '可能結果'], description: '梳理關係中的互動與態度，將結果視為會隨選擇改變的可能性。', usage: '適合：想理解一段關係當下的互動，以及如何更好地回應。' },
+  { id: 'free-1', name: '無牌陣 · 單抽', count: 1, positions: ['第 1 張'], description: '一問一答，最純粹的抽法——這張牌就是解答。', usage: '適合：問題非常聚焦、只想要一個直接的指引；問題越精準，答案越清楚。' },
+  { id: 'free-3', name: '無牌陣 · 三張', count: 3, positions: ['第 1 張', '第 2 張', '第 3 張'], description: '沒有位置框架，三張牌像幻燈片連續播放，看事件如何演進。', usage: '適合：想看一件事的前因後果與走向；問題中可以先設定時間範圍。' },
+  { id: 'free-5', name: '無牌陣 · 五張', count: 5, positions: ['第 1 張', '第 2 張', '第 3 張', '第 4 張', '第 5 張'], description: '看圖說故事的自由解讀，從正逆位、大小牌與元素分布找出主軸。', usage: '適合：想要完整脈絡的提問；建議對牌意有基本熟悉再使用。' },
 ];
 
 const flatQuestionGroups = {
@@ -118,6 +121,9 @@ function positionMeaning(spreadId, position) {
     core: { 問題核心: '聚焦這件事真正的關鍵。', 障礙: '提醒目前最需要正視或調整的環節。', 對策: '提供一個可以開始實踐的方向。', 優勢: '指出你已經具備、可以善用的資源與能力。' },
     choice: { '選項 A 的狀態': '呈現第一個方向當下的條件與氛圍。', '選項 B 的狀態': '呈現第二個方向當下的條件與氛圍。', 'A 可能結果': '顯示若選擇 A，可能出現的發展。', 'B 可能結果': '顯示若選擇 B，可能出現的發展。', 我的狀態: '提醒你做選擇前最需要留意的準備與需求。' },
     love: { 我的狀態: '看見你此刻帶進這段關係的感受與期待。', 我對關係的態度: '覺察你在這段關係中的互動方式與需求。', 對方的狀態: '提供理解對方目前狀態的參考角度。', 對方對關係的態度: '觀察你感受到的互動訊號與節奏。', 可能結果: '呈現當下條件下的可能走向，而非固定結論。' },
+    'free-1': { '第 1 張': '一問一答：這張牌就是你的問題最直接的回應。' },
+    'free-3': { '第 1 張': '故事的開端——事件的前因。', '第 2 張': '中段的發展與轉折。', '第 3 張': '順著這個勢頭走的可能結局。' },
+    'free-5': { '第 1 張': '訊息的開場。', '第 2 張': '第二幕：事件開始發展。', '第 3 張': '故事的中心——留意主軸牌是否在這裡。', '第 4 張': '第四幕：轉折與變化。', '第 5 張': '收尾的方向。' },
   };
   return meanings[spreadId][position];
 }
@@ -589,8 +595,35 @@ ${cardList || '（我還沒有翻開牌）'}
 2. 一句適合我每天看的顯化肯定句，例如「我不追逐，我接受清楚、主動、真誠、穩定且雙向的愛」。`;
 }
 
+// 無牌陣提示詞：不套位置，改用「串故事、正逆位比例、大牌主軸、元素分布」的自由解讀原則。
+function freeFormPrompt({ question, spread, cards, tone }) {
+  const cardList = cards.map((card, index) => `${index + 1}. ${card.nameZh}（${card.isReversed ? '逆位' : '正位'}）｜${card.keywords}`).join('\n');
+  const principles = spread.count === 1
+    ? `* 這張牌就是我的問題最直接的回應，請直接就牌意回答，不要繞。
+* 若是逆位：請拆成兩部分說明——①現況或預測（這個逆位反映了什麼）、②建議（如何把這張牌調回正位的能量，給我一個能實踐的做法）。
+* 若是正位：說明牌義如何回應我的問題之後，也給我一個可以帶走執行的小行動。`
+    : `* 不要套用固定牌陣的位置意義。請把這 ${spread.count} 張牌當成從左到右連續播放的幻燈片，讀出事件的演進與前因後果，把所有牌串成一段完整的故事，而不是逐張分開翻譯。
+* 觀察正位與逆位的比例：逆位偏多代表過程容易受阻。請指出阻礙分別是哪幾張牌、各代表什麼，並針對每張逆位牌給出「調回正位能量」的具體建議。
+* 留意大阿爾克那與小阿爾克那的數量：若有大牌，請把能量最強的那張視為整個牌面的主軸，優先圍繞它展開故事。
+* 觀察四元素的分布（權杖＝火、聖杯＝水、寶劍＝風、錢幣＝土）：若某個元素特別多或完全缺席，說明這反映了我什麼樣的狀態或特質。
+* 最後請收攏成三件事：①一段完整的現況與走向的故事、②我最需要留意的一件事、③1–2 個可以帶走執行的具體行動。`;
+  return `你是一位深諳塔羅的解讀者。請用繁體中文協助我反思；不要把塔羅說成必然預言，不要替我做醫療、法律、投資或重大人生決定。
+
+我的問題：
+「${question || '（我尚未填寫，請先引導我把問題說清楚）'}」
+
+這次不使用固定牌陣（無牌陣），共 ${spread.count} 張牌，依抽出順序排列：
+${cardList || '（我還沒有翻開牌）'}
+
+無牌陣解讀原則：
+${principles}
+
+${promptTones[tone] ?? promptTones.溫和}`;
+}
+
 function gptPrompt({ question, spread, cards, tone = '溫和' }) {
   if (tone === '顯化式') return manifestationPrompt({ question, spread, cards });
+  if (spread.id.startsWith('free-')) return freeFormPrompt({ question, spread, cards, tone });
   const cardList = cards.map((card) => `- ${card.position}：${card.nameZh}（${card.isReversed ? '逆位' : '正位'}）｜${card.keywords}`).join('\n');
   return `你是一位深諳塔羅的解讀者。請用繁體中文協助我反思；不要把塔羅說成必然預言，不要替我做醫療、法律、投資或重大人生決定。\n\n我的問題：\n「${question || '（我尚未填寫，請先引導我把問題說清楚）'}」\n\n使用牌陣：${spread.name}\n各位置：${spread.positions.join('、')}\n\n已翻開的牌：\n${cardList || '（我還沒有翻開牌）'}\n\n請依牌陣位置逐張解讀，再整合它們的關聯；指出我可能忽略的盲點，並給我 1–3 個小而可執行的下一步。最後提供 3 個能讓我繼續思考的開放式追問。${promptTones[tone] ?? promptTones.溫和}`;
 }
@@ -731,7 +764,7 @@ function ReadingStage({ spread, cards, revealedCards, loading, question, onRevea
   const allRevealed = cards.length > 0 && revealedCards.length === cards.length;
   return <section className={`reading-stage ${gyroActive ? 'gyro-active' : ''}`} ref={stageRef} aria-labelledby="reading-stage-title">
     <div className="reading-stage__top"><div><p className="panel-kicker">THE READING · {spread.count} CARDS</p><h1 id="reading-stage-title" ref={headingRef} tabIndex="-1">依照直覺，逐張翻開牌面</h1><p>{spread.name} · {revealedCards.length} / {cards.length} 張已翻開</p></div><button type="button" className="stage-back" onClick={onBack}>回到問題</button></div>
-    <p className="stage-instruction" aria-live="polite">{loading ? '牌面正在整理訊息…' : nextIndex < cards.length ? `現在請翻開第 ${nextIndex + 1} 張：${cards[nextIndex].position}` : '所有牌面已展開；可再次點擊任何一張，查看大圖與完整提示詞。'}</p>
+    <p className="stage-instruction" aria-live="polite">{loading ? '牌面正在整理訊息…' : nextIndex < cards.length ? `現在請翻開第 ${nextIndex + 1} 張${cards[nextIndex].position.startsWith('第') ? '' : `：${cards[nextIndex].position}`}` : '所有牌面已展開；可再次點擊任何一張，查看大圖與完整提示詞。'}</p>
     <div className={`spread-layout spread-${spread.id}`}>
       {cards.map((card, index) => <div className={`spread-slot slot-${index + 1} ${index === nextIndex && !loading ? 'is-active' : ''}`} key={`${card.nameZh}-${index}`}>
         <span className="stage-card-label">{card.position}</span>
