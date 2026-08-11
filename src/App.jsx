@@ -92,16 +92,6 @@ function positionMeaning(spreadId, position) {
   };
   return meanings[spreadId][position];
 }
-function localReading(cards) {
-  const lead = cards[0];
-  const reversed = cards.find((card) => card.isReversed);
-  return {
-    summary: `${lead.nameZh} 指出你現在最需要正視的主題是「${lead.keywords}」。${cards.filter((card) => card.arcana === '大阿爾克那').length ? '這件事帶著明顯的轉折意義。' : '這組牌更接近日常節奏與眼前選擇。'}`,
-    action: `先從「${lead.position}」開始最有效。${lead.nameZh} 的方向是：${lead.upright} 把這個提醒化成一個可完成的小動作。`,
-    caution: reversed ? `${reversed.nameZh} 的逆位提醒你：${reversed.reversed}` : '整體走向有空間，但不要因為方向看起來順，就太早停止確認自己的感受與界線。',
-  };
-}
-
 function MagicButton({ className = '', children, ...props }) {
   return <button type="button" className={`magic-button ${className}`} {...props}>
     <span className="magic-button__shadow" aria-hidden="true" />
@@ -404,11 +394,12 @@ function useGyroHolo(stageRef) {
   return gyroActive;
 }
 
-function ReadingStage({ spread, cards, revealedCards, loading, reading, question, onReveal, onOpen, onBack, headingRef }) {
+function ReadingStage({ spread, cards, revealedCards, loading, question, onReveal, onOpen, onBack, headingRef }) {
   const nextIndex = revealedCards.length;
   const stageRef = useRef(null);
   const gyroActive = useGyroHolo(stageRef);
   const visibleCards = cards.filter((card, index) => revealedCards.includes(index));
+  const allRevealed = cards.length > 0 && revealedCards.length === cards.length;
   return <section className={`reading-stage ${gyroActive ? 'gyro-active' : ''}`} ref={stageRef} aria-labelledby="reading-stage-title">
     <div className="reading-stage__top"><div><p className="panel-kicker">THE READING · {spread.count} CARDS</p><h1 id="reading-stage-title" ref={headingRef} tabIndex="-1">依照直覺，逐張翻開牌面</h1><p>{spread.name} · {revealedCards.length} / {cards.length} 張已翻開</p></div><button type="button" className="stage-back" onClick={onBack}>回到問題</button></div>
     <p className="stage-instruction" aria-live="polite">{loading ? '牌面正在整理訊息…' : nextIndex < cards.length ? `現在請翻開第 ${nextIndex + 1} 張：${cards[nextIndex].position}` : '所有牌面已展開；可再次點擊任何一張，查看大圖與完整提示詞。'}</p>
@@ -418,8 +409,7 @@ function ReadingStage({ spread, cards, revealedCards, loading, reading, question
         <TarotCard card={card} index={index} revealed={revealedCards.includes(index)} canReveal={index === nextIndex && !loading} onReveal={(event) => onReveal(index, event)} onOpen={(event) => onOpen(card, event)} />
       </div>)}
     </div>
-    {reading && <div className="stage-reading-result"><article><small>整體解讀</small><p>{reading.summary}</p></article><article><small>下一步建議</small><p>{reading.action}</p></article><article><small>需要留意</small><p>{reading.caution}</p></article></div>}
-    {reading && <StagePrompt question={question} spread={spread} cards={visibleCards} />}
+    {allRevealed && <StagePrompt question={question} spread={spread} cards={visibleCards} />}
     <p className="stage-disclaimer">這份解讀提供反思與方向，不代替專業醫療、法律或財務建議。</p>
   </section>;
 }
@@ -429,68 +419,35 @@ export default function App() {
   const [question, setQuestion] = useState('');
   const [category, setCategory] = useState('感情');
   const [cards, setCards] = useState([]);
-  const [reading, setReading] = useState(null);
   const [revealedCards, setRevealedCards] = useState([]);
   const [selectedCard, setSelectedCard] = useState(null);
   const [stageOpen, setStageOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const readingRequestedRef = useRef(false);
   const cardOpenerRef = useRef(null);
   const stageHeadingRef = useRef(null);
   const questionRef = useRef(null);
   const spread = spreads.find((item) => item.id === spreadId) ?? spreads[0];
-  const isChoosingCards = cards.length > 0 && !reading;
+  const isChoosingCards = cards.length > 0;
 
   async function draw() {
     if (!question.trim()) { setError('先寫下你想問的事，牌面才知道從哪裡開始。'); return; }
-    setError(''); setReading(null); setLoading(true); setRevealedCards([]); setSelectedCard(null); readingRequestedRef.current = false;
+    setError(''); setLoading(true); setRevealedCards([]); setSelectedCard(null);
     const selected = shuffle(deck).slice(0, spread.count).map((card, index) => ({ ...card, position: spread.positions[index], positionMeaning: positionMeaning(spread.id, spread.positions[index]), isReversed: Math.random() < 0.35 }));
     setCards(selected);
     await sleep(520);
     setStageOpen(true); setLoading(false);
   }
 
-  async function finishReading(selected) {
-    if (readingRequestedRef.current) return;
-    readingRequestedRef.current = true;
-    setLoading(true);
-    let nextReading = localReading(selected);
-    try {
-      const response = await fetch('/api/reading', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          question,
-          spread,
-          cards: selected.map((card) => ({
-            nameZh: card.nameZh,
-            nameEn: card.nameEn,
-            position: card.position,
-            reversed: card.isReversed,
-            keywords: card.keywords,
-            meaning: card.isReversed ? card.reversed : card.upright,
-          })),
-        }),
-      });
-      const payload = await response.json();
-      if (response.ok && payload?.summary && payload?.action && payload?.caution) nextReading = payload;
-    } catch { /* 本地解讀是刻意的安全備援。 */ }
-    await sleep(240);
-    setReading(nextReading); setLoading(false);
-  }
-
   function revealCard(index, event) {
     if (loading || revealedCards.includes(index) || index !== revealedCards.length) return;
-    const next = [...revealedCards, index];
-    setRevealedCards(next);
-    if (next.length === cards.length) finishReading(cards);
+    setRevealedCards([...revealedCards, index]);
   }
 
   function openCard(card, event) { cardOpenerRef.current = event.currentTarget; setSelectedCard(card); }
   function closeCard() { setSelectedCard(null); requestAnimationFrame(() => cardOpenerRef.current?.focus()); }
-  function reset() { setQuestion(''); setCards([]); setReading(null); setError(''); setRevealedCards([]); setSelectedCard(null); setStageOpen(false); readingRequestedRef.current = false; }
-  function returnToSetup() { setCards([]); setReading(null); setError(''); setRevealedCards([]); setSelectedCard(null); setStageOpen(false); readingRequestedRef.current = false; requestAnimationFrame(() => questionRef.current?.focus()); }
+  function reset() { setQuestion(''); setCards([]); setError(''); setRevealedCards([]); setSelectedCard(null); setStageOpen(false); }
+  function returnToSetup() { setCards([]); setError(''); setRevealedCards([]); setSelectedCard(null); setStageOpen(false); requestAnimationFrame(() => questionRef.current?.focus()); }
 
   useEffect(() => { if (stageOpen) stageHeadingRef.current?.focus(); }, [stageOpen]);
 
@@ -514,7 +471,7 @@ export default function App() {
         <div className="prompt-list">{questionGroups[category].map((item) => <button type="button" disabled={loading || isChoosingCards} onClick={() => { setQuestion(item); questionRef.current?.focus(); }} key={item}>{item}<span>↗</span></button>)}</div>
       </MagicPanel>
     </div>}
-    {stageOpen && <ReadingStage spread={spread} cards={cards} revealedCards={revealedCards} loading={loading} reading={reading} question={question} onReveal={revealCard} onOpen={openCard} onBack={returnToSetup} headingRef={stageHeadingRef} />}
+    {stageOpen && <ReadingStage spread={spread} cards={cards} revealedCards={revealedCards} loading={loading} question={question} onReveal={revealCard} onOpen={openCard} onBack={returnToSetup} headingRef={stageHeadingRef} />}
     {selectedCard && <TarotCardDialog card={selectedCard} onClose={closeCard} />}
   </main>;
 }

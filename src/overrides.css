@@ -772,24 +772,6 @@ textarea {
 .reading-stage .tarot-card.is-locked { opacity: .42; filter: saturate(.55); }
 .reading-stage .tarot-card.is-locked .tarot-card__tilt { cursor: not-allowed; }
 
-.stage-reading-result {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  width: min(980px, 100%);
-  margin: 0 auto 18px;
-}
-
-.stage-reading-result article {
-  padding: 16px;
-  border: 1px solid rgba(219, 230, 255, .15);
-  border-radius: 16px;
-  background: rgba(12, 16, 38, .55);
-  box-shadow: inset 0 1px rgba(255, 255, 255, .07);
-}
-
-.stage-reading-result small { color: #ead19a; font: 10px "DM Mono", monospace; letter-spacing: .1em; }
-.stage-reading-result p { margin: 9px 0 0; color: #e6e3ec; font-size: 14px; line-height: 1.75; }
 .stage-disclaimer { width: min(980px, 100%); margin: 0 auto; color: #a39eb2; font-size: 12px; line-height: 1.7; text-align: center; }
 
 @keyframes label-float {
@@ -823,7 +805,6 @@ textarea {
   .reading-stage .card-position { padding: 3px 5px; font-size: 8px; }
   .reading-stage .tarot-card h3 { font-size: 14px; }
   .reading-stage .card-orientation { padding: 3px 5px; font-size: 8px; }
-  .stage-reading-result { grid-template-columns: 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {
