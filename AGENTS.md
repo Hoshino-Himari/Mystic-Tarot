@@ -42,6 +42,15 @@ rim highlight + blur + saturate 就是本站的玻璃語言。
 彩虹五色用 oklch（含 `@supports` hex 備援），流動動畫 2.4s linear。
 其他次要按鈕維持樸素樣式，避免搶掉主 CTA 的焦點。
 
+## 全息塔羅卡（.tarot-card__front 的疊層）
+
+翻開的牌面採 GodUI HolographicCard 的 galaxy 色向（紫粉藍 + 一站金色）：
+`::before` 是箔膜 + 閃粉（`color-dodge`，用 radial mask 聚在游標處），
+`::after` 是鏡面眩光（`soft-light`）。游標位置由既有的
+`--shine-x` / `--shine-y`（`TarotCard` 的 `tiltCard`）驅動，傾斜角 ±9°/±11°。
+箔膜要疊在牌面插畫**之上**才看得見（插畫不透明），這是刻意的
+集換式卡牌質感，不要移到插畫底下。
+
 ## 通用守則
 
 - 所有裝飾動畫都要進 `prefers-reduced-motion: reduce` 的停用清單。

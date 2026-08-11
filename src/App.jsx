@@ -203,8 +203,8 @@ function TarotCard({ card, revealed, canReveal, index, onReveal, onOpen }) {
     const rect = event.currentTarget.getBoundingClientRect();
     const x = (event.clientX - rect.left) / rect.width - .5;
     const y = (event.clientY - rect.top) / rect.height - .5;
-    event.currentTarget.style.setProperty('--tilt-x', `${-y * 5}deg`);
-    event.currentTarget.style.setProperty('--tilt-y', `${x * 7}deg`);
+    event.currentTarget.style.setProperty('--tilt-x', `${-y * 9}deg`);
+    event.currentTarget.style.setProperty('--tilt-y', `${x * 11}deg`);
     event.currentTarget.style.setProperty('--shine-x', `${(x + .5) * 100}%`);
     event.currentTarget.style.setProperty('--shine-y', `${(y + .5) * 100}%`);
   }
