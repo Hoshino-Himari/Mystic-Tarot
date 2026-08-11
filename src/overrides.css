@@ -239,9 +239,7 @@ body {
 .magic-panel {
   border-color: rgba(255, 255, 255, .24);
   border-radius: 28px;
-  background:
-    radial-gradient(420px circle at var(--pointer-x) var(--pointer-y), rgba(207, 183, 255, .14), transparent 42%),
-    linear-gradient(135deg, rgba(255, 255, 255, .13), rgba(255, 255, 255, .04) 36%, rgba(255, 255, 255, .02) 62%, rgba(255, 255, 255, .09));
+  background: linear-gradient(135deg, rgba(255, 255, 255, .13), rgba(255, 255, 255, .04) 36%, rgba(255, 255, 255, .02) 62%, rgba(255, 255, 255, .09));
   box-shadow:
     0 26px 60px rgba(3, 1, 16, .5),
     inset 0 1px 0 rgba(255, 255, 255, .42),
@@ -261,16 +259,11 @@ body {
 
 @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
   .magic-panel {
-    background:
-      radial-gradient(420px circle at var(--pointer-x) var(--pointer-y), rgba(207, 183, 255, .13), transparent 40%),
-      linear-gradient(145deg, rgba(39, 30, 70, .92), rgba(17, 15, 31, .92));
+    background: linear-gradient(145deg, rgba(39, 30, 70, .92), rgba(17, 15, 31, .92));
   }
 }
 
-.magic-panel::before {
-  z-index: 0;
-  background: radial-gradient(220px circle at var(--pointer-x) var(--pointer-y), rgba(240, 205, 121, .2), transparent 55%);
-}
+.magic-panel::before { display: none; }
 
 .magic-panel::after {
   position: absolute;
@@ -294,7 +287,6 @@ body {
     inset 0 0 52px rgba(234, 193, 107, .07);
 }
 
-.magic-panel:hover::before { opacity: 1; }
 .magic-panel:hover::after { transform: translateX(22%) rotate(.001deg); }
 .magic-panel > * { z-index: 1; }
 

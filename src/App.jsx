@@ -111,12 +111,7 @@ function MagicButton({ className = '', children, ...props }) {
 }
 
 function MagicPanel({ className = '', children }) {
-  function followPointer(event) {
-    const rect = event.currentTarget.getBoundingClientRect();
-    event.currentTarget.style.setProperty('--pointer-x', `${event.clientX - rect.left}px`);
-    event.currentTarget.style.setProperty('--pointer-y', `${event.clientY - rect.top}px`);
-  }
-  return <section className={`magic-panel ${className}`} onPointerMove={followPointer}>{children}</section>;
+  return <section className={`magic-panel ${className}`}>{children}</section>;
 }
 
 function ParticleTitle() {

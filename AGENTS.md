@@ -8,7 +8,8 @@
 
 - 玻璃薄膜：半透明白色漸層（`rgba(255,255,255,.13)` → `.02` → `.09`），配 `backdrop-filter: blur(22px) saturate(1.7)`，讓面板真正模糊、加飽和背後的銀河與極光。
 - 邊緣折射：四邊各一道 `inset` 高光（頂部最亮 `.42`，左右 `.16`/`.11`，底部 `.09`），這是玻璃厚度的視覺來源。
-- 互動：游標跟隨光暈用 `--pointer-x` / `--pointer-y`（由 `MagicPanel` 的 `onPointerMove` 寫入）；hover 時邊框轉暖金色、斜向光澤（`::after`）掃過玻璃。請保留這兩個互動。
+- 互動：hover 時邊框轉暖金色、斜向光澤（`::after`）掃過玻璃。請保留這個互動。
+  游標跟隨光暈（pointer-follow glow）是站主決定移除的——光源太多，不要加回來。
 - 備援：`@supports not (backdrop-filter…)` 時退回深色實底漸層，不可移除。
 
 ### 為什麼不用 `feTurbulence` + `feDisplacementMap`？
