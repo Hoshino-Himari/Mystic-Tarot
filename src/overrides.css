@@ -128,6 +128,8 @@
 .ref-card__copy b { display: block; margin-bottom: 6px; color: #f3d28b; font-size: 14px; }
 .ref-card__copy p { margin: 0 0 6px; color: #c9c2d6; font-size: 11.5px; line-height: 1.7; }
 
+.numerology-prompt { width: 100%; margin: 18px 0 0; }
+
 .life-number--mini { margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(222, 233, 255, .1); }
 .life-number--mini > b { font-size: 44px; }
 .life-number--mini h3 { font-size: 15px; }

@@ -134,6 +134,53 @@ const destinyMeanings = {
 
 function digitSum(value) { return String(value).split('').reduce((total, ch) => total + Number(ch), 0); }
 
+function numerologyPrompt({ result, steps, tone }) {
+  const destinyCard = cardForNumber(result.destinyNumber);
+  const refLines = result.refs.map((ref) => `${ref}（${cardForNumber(ref).nameZh} ${cardForNumber(ref).nameEn}）`).join('、');
+  return `你是一位熟悉塔羅命數與生命靈數的解讀者。請用繁體中文協助我更認識自己；內容請當作反思的參考，不要說成絕對的命定。
+
+我的西元生日：${result.y} 年 ${result.m} 月 ${result.d} 日
+計算過程：${steps.join('；')}
+塔羅命數：${result.destinyNumber}（${destinyCard.nameZh} ${destinyCard.nameEn}${result.destinyNumber === 22 ? '，加總 22 對應 0 愚人' : ''}）
+${refLines ? `同時參考：${refLines}\n` : ''}生命靈數：${result.lifeNumber}
+
+請依序告訴我：
+1. 塔羅命數主牌反映的處事態度與決策慣性：優勢與劣勢各自會怎麼出現在我的工作、感情與人際裡（各舉一個具體情境）。
+2. ${refLines ? '主牌與同時參考的牌如何交互作用：哪些特質互補、哪些會互相拉扯。' : '這張主牌單獨出現時，最容易被我自己忽略的一面是什麼。'}
+3. 生命靈數 ${result.lifeNumber} 的天賦與課題，和塔羅命數合起來看，我最需要留意的一個盲點。
+4. 給我 1–3 個小而可執行的日常練習，幫我把優勢用出來、接住劣勢。
+
+最後請用一句話總結「我是什麼樣的人」。
+
+${promptTones[tone] ?? promptTones.溫和}`;
+}
+
+function NumerologyPrompt({ result, steps }) {
+  const [tone, setTone] = useState('溫和');
+  const [copyStatus, setCopyStatus] = useState('');
+  const tones = Object.keys(promptTones).filter((item) => item !== '顯化式');
+  const prompt = numerologyPrompt({ result, steps, tone });
+
+  async function copyPrompt() {
+    try {
+      await navigator.clipboard.writeText(prompt);
+      setCopyStatus(`已複製「${tone}」語氣的提示詞，可直接貼到 GPT。`);
+    } catch {
+      setCopyStatus('無法自動複製，請展開預覽手動複製。');
+    }
+  }
+
+  return <div className="stage-prompt numerology-prompt">
+    <div className="stage-prompt__head"><small>GPT 延伸解讀</small><p>選一種語氣，複製提示詞貼到 GPT，讓它把你的命數讀得更深。</p></div>
+    <div className="stage-prompt__row">
+      <div className="tone-row" role="group" aria-label="解讀語氣">{tones.map((item) => <button type="button" key={item} className={tone === item ? 'tone active' : 'tone'} onClick={() => { setTone(item); setCopyStatus(''); }}>{item}</button>)}</div>
+      <button type="button" className="copy-prompt" onClick={copyPrompt}>複製提示詞 ✦</button>
+    </div>
+    <details className="stage-prompt__preview"><summary>預覽提示詞</summary><textarea readOnly value={prompt} aria-label="可複製的命數解讀提示詞" /></details>
+    <span className="stage-prompt__status" aria-live="polite">{copyStatus}</span>
+  </div>;
+}
+
 function NumerologyPage() {
   const [year, setYear] = useState('');
   const [month, setMonth] = useState('');
@@ -153,7 +200,7 @@ function NumerologyPage() {
     while (sums[sums.length - 1] > 9) sums.push(digitSum(sums[sums.length - 1]));
     const destinyIndex = sums.findIndex((sum) => sum <= 22);
     setResult({
-      digits, sums,
+      digits, sums, y, m, d,
       lifeNumber: sums[sums.length - 1],
       destinyNumber: sums[destinyIndex],
       refs: sums.slice(destinyIndex + 1), // 命數 10 以上要同時參考的後續加總
@@ -207,6 +254,7 @@ function NumerologyPage() {
         </div>}
         <div className="life-number life-number--mini"><b>{result.lifeNumber}</b><div><h3>生命靈數 · {numerologyMeanings[result.lifeNumber][0]}</h3><p>{numerologyMeanings[result.lifeNumber][1]}</p></div></div>
         <p className="soul-note">命數反映的是你不自覺的決策方式與處事態度——優勢和劣勢往往是同一件事的兩面，看見了，就能在需要的時候提醒自己調整。</p>
+        <NumerologyPrompt result={result} steps={steps} />
       </>}
     </MagicPanel>
   </div>;
