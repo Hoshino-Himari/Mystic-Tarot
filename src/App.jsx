@@ -102,6 +102,14 @@ function localReading(cards) {
   };
 }
 
+function MagicButton({ className = '', children, ...props }) {
+  return <button type="button" className={`magic-button ${className}`} {...props}>
+    <span className="magic-button__shadow" aria-hidden="true" />
+    <span className="magic-button__edge" aria-hidden="true" />
+    <span className="magic-button__front">{children}</span>
+  </button>;
+}
+
 function MagicPanel({ className = '', children }) {
   function followPointer(event) {
     const rect = event.currentTarget.getBoundingClientRect();
@@ -377,7 +385,7 @@ export default function App() {
         <p className="panel-kicker">01 · SET YOUR INTENTION</p><h2>先說說你在意的事</h2><p className="panel-intro">選擇牌陣，然後寫下此刻真正想問的問題。不需要完美，只要誠實。</p>
         <label>選擇牌陣<select value={spreadId} disabled={loading || isChoosingCards} onChange={(event) => setSpreadId(event.target.value)}>{spreads.map((item) => <option key={item.id} value={item.id}>{item.name} · {item.count} 張牌</option>)}</select></label><div className="spread-detail"><p>{spread.name} · {spread.count} 張牌</p><b>{spread.usage}</b><span>{spread.description}</span><small>抽牌位置：{spread.positions.join(' · ')}</small></div>
         <label>你的問題<textarea ref={questionRef} value={question} disabled={loading || isChoosingCards} onChange={(event) => setQuestion(event.target.value)} placeholder="例如：我接下來三個月最該專注的是什麼？" /></label>
-        <div className="actions"><button className="draw-button" disabled={loading || isChoosingCards} onClick={draw}>{loading ? '正在翻閱牌面…' : '抽牌解讀'} <span>✦</span></button><button className="reset-button" disabled={loading} onClick={reset}>重設</button></div>
+        <div className="actions"><MagicButton className="draw-button" disabled={loading || isChoosingCards} onClick={draw}>{loading ? '正在翻閱牌面…' : '抽牌解讀'} <span>✦</span></MagicButton><button className="reset-button" disabled={loading} onClick={reset}>重設</button></div>
         {error && <p className="error">{error}</p>}
       </MagicPanel>
       <MagicPanel className="template-panel">
