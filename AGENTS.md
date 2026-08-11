@@ -6,10 +6,11 @@
 
 玻璃質感只用一種技術路線：**真實的 `backdrop-filter` 折射**，不要在面板上疊 SVG 濾鏡。
 
-- 玻璃薄膜：半透明白色漸層（`rgba(255,255,255,.13)` → `.02` → `.09`），配 `backdrop-filter: blur(22px) saturate(1.7)`，讓面板真正模糊、加飽和背後的銀河與極光。
-- 邊緣折射：四邊各一道 `inset` 高光（頂部最亮 `.42`，左右 `.16`/`.11`，底部 `.09`），這是玻璃厚度的視覺來源。
-- 互動：hover 時邊框轉暖金色、斜向光澤（`::after`）掃過玻璃。請保留這個互動。
-  游標跟隨光暈（pointer-follow glow）是站主決定移除的——光源太多，不要加回來。
+- 玻璃薄膜：半透明白色漸層（`rgba(255,255,255,.09)` → `.015` → `.055`），配 `backdrop-filter: blur(10px) saturate(1.65)`。
+  模糊刻意壓在 10px：磨太重（20px+）會變霧面壓克力，背景細節全糊掉就沒有玻璃感——站主退過一次 22px 的版本，不要調回去。
+- 邊緣折射：四邊各一道 `inset` 高光（頂部最亮 `.28`，左右 `.11`/`.08`，底部 `.07`），這是玻璃厚度的視覺來源。
+- 互動：hover 時邊框轉暖金色、斜向光澤（`::after`）掃過玻璃。光澤靜止時必須完全隱藏（`opacity: 0`）——
+  站主反應過靜止時掛著一道光很突兀。游標跟隨光暈（pointer-follow glow）也是站主決定移除的，不要加回來。
 - 備援：`@supports not (backdrop-filter…)` 時退回深色實底漸層，不可移除。
 
 ### 為什麼不用 `feTurbulence` + `feDisplacementMap`？
@@ -25,10 +26,10 @@ rim highlight + blur + saturate 就是本站的玻璃語言。
 
 ## 銀河背景（不可更動）
 
-`body` 的深空漸層、`.star-field` 的星雲圖（`/galaxy/low-light-nebula-v1.webp`）
-與 `galaxy-drift` / `stage-galaxy-drift` 漂移動畫是站主指定保留的，
-任何改動都不要碰這一區。極光光暈（`.aurora`）疊在銀河之上、面板之後，
-透明度刻意壓低（.3–.42），調整時以「銀河仍清楚可見」為底線。
+`body` 的深空漸層與 `.star-field` 的星雲圖（`/galaxy/low-light-nebula-v1.webp`）
+是站主指定保留的，不要換掉或蓋掉。`galaxy-drift` / `stage-galaxy-drift` 的
+節奏是依站主回饋調快過的（44s / 56s，玻璃變透之後移動才看得見）；
+極光（`.aurora`）同理跑 11s。調整動態時以「銀河仍清楚可見、閱讀不暈」為底線。
 
 ## 配色
 

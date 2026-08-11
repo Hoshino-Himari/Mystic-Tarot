@@ -230,7 +230,7 @@ select:focus {
   .tarot-card__front::after { display: none; }
 }
 
-/* Low-light galaxy and liquid glass are deliberately static so reading stays calm. */
+/* Low-light galaxy: drift pace tuned so the motion reads through the glass. */
 body {
   min-height: 100vh;
   background-color: #050713;
@@ -250,7 +250,7 @@ body {
     url('/galaxy/low-light-nebula-v1.webp');
   background-size: cover, 118% auto;
   background-position: center, 48% 52%;
-  animation: galaxy-drift 96s ease-in-out infinite alternate;
+  animation: galaxy-drift 44s ease-in-out infinite alternate;
   will-change: background-position;
 }
 
@@ -265,32 +265,32 @@ body {
 .aurora i {
   position: absolute;
   border-radius: 50%;
-  opacity: .42;
-  animation: aurora-drift 19s ease-in-out infinite alternate;
+  opacity: .5;
+  animation: aurora-drift 11s ease-in-out infinite alternate;
 }
 
 .aurora i:nth-child(1) { width: 480px; height: 480px; left: -8%; top: 16%; background: radial-gradient(circle, #7d54ff, transparent 70%); }
-.aurora i:nth-child(2) { width: 540px; height: 540px; right: -10%; top: 34%; background: radial-gradient(circle, #e050b8, transparent 70%); opacity: .38; animation-delay: -6s; }
-.aurora i:nth-child(3) { width: 430px; height: 430px; left: 32%; bottom: -14%; background: radial-gradient(circle, #e8a63c, transparent 70%); opacity: .3; animation-delay: -12s; }
+.aurora i:nth-child(2) { width: 540px; height: 540px; right: -10%; top: 34%; background: radial-gradient(circle, #e050b8, transparent 70%); opacity: .44; animation-delay: -4s; }
+.aurora i:nth-child(3) { width: 430px; height: 430px; left: 32%; bottom: -14%; background: radial-gradient(circle, #e8a63c, transparent 70%); opacity: .34; animation-delay: -8s; }
 
 .magic-panel {
-  border-color: rgba(255, 255, 255, .24);
+  border-color: rgba(255, 255, 255, .2);
   border-radius: 28px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, .13), rgba(255, 255, 255, .04) 36%, rgba(255, 255, 255, .02) 62%, rgba(255, 255, 255, .09));
+  background: linear-gradient(135deg, rgba(255, 255, 255, .09), rgba(255, 255, 255, .03) 36%, rgba(255, 255, 255, .015) 62%, rgba(255, 255, 255, .055));
   box-shadow:
     0 26px 60px rgba(3, 1, 16, .5),
-    inset 0 1px 0 rgba(255, 255, 255, .42),
-    inset 0 -1px 0 rgba(255, 255, 255, .09),
-    inset 1.5px 0 0 rgba(255, 255, 255, .16),
-    inset -1.5px 0 0 rgba(255, 255, 255, .11),
-    inset 0 0 42px rgba(207, 183, 255, .06);
+    inset 0 1px 0 rgba(255, 255, 255, .28),
+    inset 0 -1px 0 rgba(255, 255, 255, .07),
+    inset 1.5px 0 0 rgba(255, 255, 255, .11),
+    inset -1.5px 0 0 rgba(255, 255, 255, .08),
+    inset 0 0 42px rgba(207, 183, 255, .05);
   transition: border-color .25s ease, transform .25s ease, box-shadow .25s ease;
 }
 
 @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
   .magic-panel {
-    -webkit-backdrop-filter: blur(22px) saturate(1.7);
-    backdrop-filter: blur(22px) saturate(1.7);
+    -webkit-backdrop-filter: blur(10px) saturate(1.65);
+    backdrop-filter: blur(10px) saturate(1.65);
   }
 }
 
@@ -308,27 +308,28 @@ body {
   inset: -45% -25%;
   pointer-events: none;
   content: '';
-  background: linear-gradient(115deg, transparent 34%, rgba(255, 255, 255, .1) 44%, rgba(255, 255, 255, .02) 52%, transparent 62%);
+  opacity: 0;
+  background: linear-gradient(115deg, transparent 34%, rgba(255, 255, 255, .07) 44%, rgba(255, 255, 255, .015) 52%, transparent 62%);
   transform: translateX(-32%) rotate(.001deg);
-  transition: transform .9s cubic-bezier(.2, .7, .2, 1);
+  transition: transform .9s cubic-bezier(.2, .7, .2, 1), opacity .4s ease;
 }
 
 .magic-panel:hover {
-  border-color: rgba(255, 236, 196, .45);
+  border-color: rgba(255, 236, 196, .38);
   box-shadow:
     0 30px 68px rgba(3, 1, 16, .56),
-    inset 0 1px 0 rgba(255, 255, 255, .55),
-    inset 0 -1px 0 rgba(255, 255, 255, .11),
-    inset 1.5px 0 0 rgba(255, 255, 255, .19),
-    inset -1.5px 0 0 rgba(255, 255, 255, .13),
-    inset 0 0 52px rgba(234, 193, 107, .07);
+    inset 0 1px 0 rgba(255, 255, 255, .38),
+    inset 0 -1px 0 rgba(255, 255, 255, .09),
+    inset 1.5px 0 0 rgba(255, 255, 255, .14),
+    inset -1.5px 0 0 rgba(255, 255, 255, .1),
+    inset 0 0 52px rgba(234, 193, 107, .06);
 }
 
-.magic-panel:hover::after { transform: translateX(22%) rotate(.001deg); }
+.magic-panel:hover::after { opacity: 1; transform: translateX(22%) rotate(.001deg); }
 .magic-panel > * { z-index: 1; }
 
 @keyframes aurora-drift {
-  to { transform: translate3d(64px, -44px, 0) scale(1.14); }
+  to { transform: translate3d(120px, -80px, 0) scale(1.22); }
 }
 
 /* GodUI-style magic button: 3D push button — rainbow glow shadow + rainbow
@@ -550,7 +551,7 @@ textarea {
     url('/galaxy/low-light-nebula-v1.webp');
   background-size: cover, 122% auto;
   background-position: center, 52% 48%;
-  animation: stage-galaxy-drift 112s ease-in-out infinite alternate;
+  animation: stage-galaxy-drift 56s ease-in-out infinite alternate;
   -webkit-backdrop-filter: blur(18px) saturate(115%);
   backdrop-filter: blur(18px) saturate(115%);
 }
@@ -703,9 +704,9 @@ textarea {
 }
 
 @keyframes galaxy-drift {
-  0% { background-position: center, 46% 54%; }
-  50% { background-position: center, 54% 47%; }
-  100% { background-position: center, 49% 53%; }
+  0% { background-position: center, 42% 56%; }
+  50% { background-position: center, 58% 45%; }
+  100% { background-position: center, 46% 55%; }
 }
 
 @keyframes stage-galaxy-drift {
