@@ -52,10 +52,13 @@ const questionCategories = ['感情', '工作', '金錢', '人際', '自我'];
 const readingModes = {
   一般: { hint: '最經典的自由提問占卜。', placeholder: '例如：我接下來三個月最該專注的是什麼？' },
   高我對話: { hint: '把問題交給更高視角的自己，取得最高善的指引。', placeholder: '例如：親愛的高我，關於現在這件事，我該怎麼想、怎麼行動？' },
-  寵物占卜: { hint: '把毛孩的狀態與心聲，透過牌面翻譯給你。', placeholder: '例如：Nimo 最近一直對我叫，他想對我說什麼？' },
+  寵物占卜: { hint: '把毛孩的狀態與心聲，透過牌面翻譯給你。', placeholder: '例如：我家毛孩最近怪怪的，牠想對我說什麼？' },
   投資指引: { hint: '把牌面當決策反思，不是投資建議——盈虧自負，動作要快。', placeholder: '例如：A 與 B 兩個標的，哪一個更符合我穩定成長的目標？' },
-  尋物: { hint: '抽一張宮廷牌，用雙元素推方位。', placeholder: '例如：我的畢業證書可能在哪裡？' },
+  尋物: { hint: '抽一張宮廷牌，用雙元素推方位。', placeholder: '例如：我的鑰匙可能在哪裡？' },
 };
+
+// 這幾個模式走無牌陣就好：選單只留單抽／三張／五張。
+const freeOnlyModes = ['高我對話', '寵物占卜', '投資指引'];
 
 const modeDirectives = {
   高我對話: '這是一場「與高我對話」的占卜：請以我的高我口吻回應——溫柔、有智慧、不評判。開頭先用一句高我想對我說的話，結尾給我一個最高善的提醒。',
@@ -893,10 +896,10 @@ export default function App() {
       <MagicPanel className="question-panel">
         <p className="panel-kicker">01 · SET YOUR INTENTION</p><h2>先說說你在意的事</h2><p className="panel-intro">選擇占卜模式與牌陣，然後寫下此刻真正想問的問題。不需要完美，只要誠實。</p>
         <div className="field"><span className="field-label">占卜模式</span>
-          <div className="mode-row">{Object.keys(readingModes).map((item) => <button type="button" key={item} disabled={loading || isChoosingCards} className={mode === item ? 'category active' : 'category'} onClick={() => setMode(item)}>{item}</button>)}</div>
+          <div className="mode-row">{Object.keys(readingModes).map((item) => <button type="button" key={item} disabled={loading || isChoosingCards} className={mode === item ? 'category active' : 'category'} onClick={() => { setMode(item); if (freeOnlyModes.includes(item) && !spreadId.startsWith('free-')) setSpreadId('free-3'); }}>{item}</button>)}</div>
           <p className="mode-hint">{readingModes[mode].hint}</p>
         </div>
-        {mode !== '尋物' && <><div className="field"><span className="field-label" id="spread-select-label">選擇牌陣</span><SpreadSelect options={spreads} value={spreadId} disabled={loading || isChoosingCards} labelledBy="spread-select-label" onChange={setSpreadId} /></div><div className="spread-detail"><p>{spread.name} · {spread.count} 張牌</p><b>{spread.usage}</b><span>{spread.description}</span><small>抽牌位置：{spread.positions.join(' · ')}</small></div></>}
+        {mode !== '尋物' && <><div className="field"><span className="field-label" id="spread-select-label">{freeOnlyModes.includes(mode) ? '抽牌張數' : '選擇牌陣'}</span><SpreadSelect options={freeOnlyModes.includes(mode) ? spreads.filter((item) => item.id.startsWith('free-')) : spreads} value={spreadId} disabled={loading || isChoosingCards} labelledBy="spread-select-label" onChange={setSpreadId} /></div><div className="spread-detail"><p>{spread.name} · {spread.count} 張牌</p><b>{spread.usage}</b><span>{spread.description}</span><small>抽牌位置：{spread.positions.join(' · ')}</small></div></>}
         {mode === '尋物' && <div className="spread-detail"><p>尋物 · 宮廷牌 · 1 張</p><b>固定從 16 張宮廷牌（侍者／騎士／皇后／國王）中抽一張。</b><span>牌組與位階各帶一個元素，兩個元素對應的方位交集，就是建議尋找的方向；翻牌後會直接顯示方位與環境提示。</span></div>}
         <label>你的問題<textarea ref={questionRef} value={question} disabled={loading || isChoosingCards} onChange={(event) => setQuestion(event.target.value)} placeholder={readingModes[mode].placeholder} /></label>
         <div className="actions"><MagicButton className="draw-button" disabled={loading || isChoosingCards} onClick={draw}>{loading ? '正在翻閱牌面…' : '抽牌解讀'} <span>✦</span></MagicButton><button className="reset-button" disabled={loading} onClick={reset}>重設</button></div>
