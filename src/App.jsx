@@ -103,22 +103,12 @@ function localReading(cards) {
 }
 
 function MagicPanel({ className = '', children }) {
-  return <section className={`magic-panel liquid-glass-card ${className}`}>
-    <span className="magic-panel__liquid" aria-hidden="true" />
-    <div className="magic-panel__content">{children}</div>
-  </section>;
-}
-
-function GlassDistortionFilter() {
-  return <svg className="glass-distortion-filter" aria-hidden="true" focusable="false">
-    <defs>
-      <filter id="glass-distortion" x="-12%" y="-12%" width="124%" height="124%">
-        <feTurbulence type="fractalNoise" baseFrequency=".012 .009" numOctaves="2" seed="92" result="noise" />
-        <feGaussianBlur in="noise" stdDeviation="1.2" result="softNoise" />
-        <feDisplacementMap in="SourceGraphic" in2="softNoise" scale="34" xChannelSelector="R" yChannelSelector="G" />
-      </filter>
-    </defs>
-  </svg>;
+  function followPointer(event) {
+    const rect = event.currentTarget.getBoundingClientRect();
+    event.currentTarget.style.setProperty('--pointer-x', `${event.clientX - rect.left}px`);
+    event.currentTarget.style.setProperty('--pointer-y', `${event.clientY - rect.top}px`);
+  }
+  return <section className={`magic-panel ${className}`} onPointerMove={followPointer}>{children}</section>;
 }
 
 function ParticleTitle() {
@@ -379,7 +369,7 @@ export default function App() {
 
   return <main className="site-shell">
     <div className="star-field" aria-hidden="true" />
-    <GlassDistortionFilter />
+    <div className="aurora" aria-hidden="true"><i /><i /><i /></div>
     <nav className="topbar"><a href="#top" className="brand"><span>☾</span> 神秘塔羅</a><span>YOUR QUIET READING</span></nav>
     <header className="hero" id="top"><p>給自己的占卜時間</p><ParticleTitle /><div className="hero-orbit" aria-hidden="true" /></header>
     {!stageOpen && <div className="app-grid">
