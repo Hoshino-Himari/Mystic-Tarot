@@ -51,6 +51,9 @@ rim highlight + blur + saturate 就是本站的玻璃語言。
 `--shine-x` / `--shine-y`（`TarotCard` 的 `tiltCard`）驅動，傾斜角 ±9°/±11°。
 箔膜要疊在牌面插畫**之上**才看得見（插畫不透明），這是刻意的
 集換式卡牌質感，不要移到插畫底下。
+觸控裝置改用陀螺儀驅動（`useGyroHolo`）：以第一筆感測值為基準點、
+±15° 對應全範圍、rAF lerp 平滑；iOS 的授權請求必須留在使用者手勢裡。
+`prefers-reduced-motion` 時陀螺儀完全不啟動。
 
 ## 通用守則
 

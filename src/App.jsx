@@ -284,9 +284,77 @@ function TarotCardDialog({ card, question, spread, visibleCards, reading, onClos
   </div>;
 }
 
+// 觸控裝置沒有游標，改用陀螺儀驅動全息箔膜與傾斜：傾斜手機＝轉動手上的閃卡。
+// iOS 13+ 規定 requestPermission 必須在使用者手勢中呼叫，所以掛在第一次 pointerdown。
+function useGyroHolo(stageRef) {
+  const [gyroActive, setGyroActive] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('DeviceOrientationEvent' in window)) return undefined;
+    if (!window.matchMedia('(pointer: coarse)').matches) return undefined;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+
+    let frame = 0;
+    let attached = false;
+    let baseline = null;
+    const target = { x: 0, y: 0 };
+    const current = { x: 0, y: 0 };
+
+    function handleOrientation(event) {
+      if (event.gamma == null || event.beta == null) return;
+      if (!baseline) baseline = { beta: event.beta, gamma: event.gamma };
+      target.x = Math.max(-0.5, Math.min(0.5, (event.gamma - baseline.gamma) / 30));
+      target.y = Math.max(-0.5, Math.min(0.5, (event.beta - baseline.beta) / 30));
+    }
+
+    function tick() {
+      current.x += (target.x - current.x) * 0.12;
+      current.y += (target.y - current.y) * 0.12;
+      stageRef.current?.querySelectorAll('.tarot-card').forEach((card) => {
+        card.style.setProperty('--tilt-x', `${-current.y * 9}deg`);
+        card.style.setProperty('--tilt-y', `${current.x * 11}deg`);
+        card.style.setProperty('--shine-x', `${(current.x + 0.5) * 100}%`);
+        card.style.setProperty('--shine-y', `${(current.y + 0.5) * 100}%`);
+      });
+      frame = requestAnimationFrame(tick);
+    }
+
+    function attach() {
+      if (attached) return;
+      attached = true;
+      window.addEventListener('deviceorientation', handleOrientation);
+      setGyroActive(true);
+      frame = requestAnimationFrame(tick);
+    }
+
+    function requestOnTap() {
+      DeviceOrientationEvent.requestPermission()
+        .then((state) => { if (state === 'granted') attach(); })
+        .catch(() => {});
+      window.removeEventListener('pointerdown', requestOnTap);
+    }
+
+    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+      window.addEventListener('pointerdown', requestOnTap);
+    } else {
+      attach();
+    }
+
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('deviceorientation', handleOrientation);
+      window.removeEventListener('pointerdown', requestOnTap);
+    };
+  }, [stageRef]);
+
+  return gyroActive;
+}
+
 function ReadingStage({ spread, cards, revealedCards, loading, reading, onReveal, onOpen, onBack, headingRef }) {
   const nextIndex = revealedCards.length;
-  return <section className="reading-stage" aria-labelledby="reading-stage-title">
+  const stageRef = useRef(null);
+  const gyroActive = useGyroHolo(stageRef);
+  return <section className={`reading-stage ${gyroActive ? 'gyro-active' : ''}`} ref={stageRef} aria-labelledby="reading-stage-title">
     <div className="reading-stage__top"><div><p className="panel-kicker">THE READING · {spread.count} CARDS</p><h1 id="reading-stage-title" ref={headingRef} tabIndex="-1">依照直覺，逐張翻開牌面</h1><p>{spread.name} · {revealedCards.length} / {cards.length} 張已翻開</p></div><button type="button" className="stage-back" onClick={onBack}>回到問題</button></div>
     <p className="stage-instruction" aria-live="polite">{loading ? '牌面正在整理訊息…' : nextIndex < cards.length ? `現在請翻開第 ${nextIndex + 1} 張：${cards[nextIndex].position}` : '所有牌面已展開；可再次點擊任何一張，查看大圖與完整提示詞。'}</p>
     <div className={`spread-layout spread-${spread.id}`}>
