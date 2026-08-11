@@ -219,25 +219,34 @@ function TarotCard({ card, revealed, canReveal, index, onReveal, onOpen }) {
       <div className="tarot-card__inner">
         <div className="tarot-card__back"><span className="card-star">✦</span><span>{card.position}</span><small>ARCANA</small></div>
         <div className="tarot-card__front">
-          <span className="card-position">{card.position}</span>
           <div className={`card-artwork ${card.isReversed ? 'is-reversed' : ''}`}><img src={card.imageSrc} alt="" /></div>
-          <div><h3>{card.nameZh}</h3><p>{card.nameEn}</p></div>
-          <div><span className={card.isReversed ? 'card-orientation reversed' : 'card-orientation'}>{card.isReversed ? '逆位' : '正位'}</span><p className="card-copy">{card.isReversed ? card.reversed : card.upright}</p></div>
+          <div className="card-overlay">
+            <span className="card-position">{card.position}</span>
+            <div className="card-overlay__name">
+              <h3>{card.nameZh}</h3>
+              <span className={card.isReversed ? 'card-orientation reversed' : 'card-orientation'}>{card.isReversed ? '逆位' : '正位'}</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </button>;
 }
 
-function gptPrompt({ question, spread, cards }) {
+const promptTones = {
+  溫和: '語氣請溫柔、具體、鼓勵：先同理我的處境，再慢慢給我提醒與方向，不使用恐嚇或絕對化措辭。',
+  犀利: '語氣請直接、犀利、一針見血：直說我可能在逃避或自我安慰的地方，不需要鋪墊與安慰話術，但保持尊重、對事不對人。',
+  務實: '語氣請冷靜務實：聚焦現實條件、資源與可執行的步驟，少談抽象感受，多給具體做法與建議的時間點。',
+  詩意: '請用詩意的語言回應：以牌面的意象與隱喻寫成一封給我的短信，但結尾仍要落在具體可行的提醒上。',
+};
+
+function gptPrompt({ question, spread, cards, tone = '溫和' }) {
   const cardList = cards.map((card) => `- ${card.position}：${card.nameZh}（${card.isReversed ? '逆位' : '正位'}）｜${card.keywords}`).join('\n');
-  return `你是一位溫和、務實的塔羅解讀者。請用繁體中文協助我反思；不要把塔羅說成必然預言，不要替我做醫療、法律、投資或重大人生決定。\n\n我的問題：\n「${question || '（我尚未填寫，請先引導我把問題說清楚）'}」\n\n使用牌陣：${spread.name}\n各位置：${spread.positions.join('、')}\n\n已翻開的牌：\n${cardList || '（我還沒有翻開牌）'}\n\n請依牌陣位置逐張解讀，再整合它們的關聯；指出我可能忽略的盲點，並給我 1–3 個小而可執行的下一步。最後提供 3 個能讓我繼續思考的開放式追問。語氣請誠實、具體、溫和，不使用恐嚇或絕對化措辭。`;
+  return `你是一位深諳塔羅的解讀者。請用繁體中文協助我反思；不要把塔羅說成必然預言，不要替我做醫療、法律、投資或重大人生決定。\n\n我的問題：\n「${question || '（我尚未填寫，請先引導我把問題說清楚）'}」\n\n使用牌陣：${spread.name}\n各位置：${spread.positions.join('、')}\n\n已翻開的牌：\n${cardList || '（我還沒有翻開牌）'}\n\n請依牌陣位置逐張解讀，再整合它們的關聯；指出我可能忽略的盲點，並給我 1–3 個小而可執行的下一步。最後提供 3 個能讓我繼續思考的開放式追問。${promptTones[tone] ?? promptTones.溫和}`;
 }
 
-function TarotCardDialog({ card, question, spread, visibleCards, reading, onClose }) {
+function TarotCardDialog({ card, onClose }) {
   const closeRef = useRef(null);
-  const [copyStatus, setCopyStatus] = useState('');
-  const prompt = gptPrompt({ question, spread, cards: visibleCards });
 
   useEffect(() => {
     closeRef.current?.focus();
@@ -246,7 +255,7 @@ function TarotCardDialog({ card, question, spread, visibleCards, reading, onClos
     function handleKeyDown(event) {
       if (event.key === 'Escape') onClose();
       if (event.key !== 'Tab') return;
-      const focusable = [...document.querySelectorAll('.card-dialog button, .card-dialog textarea, .card-dialog summary')].filter((element) => !element.disabled);
+      const focusable = [...document.querySelectorAll('.card-dialog button')].filter((element) => !element.disabled);
       if (!focusable.length) return;
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
@@ -257,30 +266,44 @@ function TarotCardDialog({ card, question, spread, visibleCards, reading, onClos
     return () => { document.body.style.overflow = previousOverflow; window.removeEventListener('keydown', handleKeyDown); };
   }, [onClose]);
 
-  async function copyPrompt() {
-    try {
-      await navigator.clipboard.writeText(prompt);
-      setCopyStatus('已複製，可直接貼到 GPT。');
-    } catch {
-      setCopyStatus('無法自動複製，請從下方文字框手動複製。');
-    }
-  }
-
   const meaning = card.isReversed ? card.reversed : card.upright;
   return <div className="card-dialog-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
     <section className="card-dialog" role="dialog" aria-modal="true" aria-labelledby="card-dialog-title">
       <button type="button" className="dialog-close" onClick={onClose} ref={closeRef} aria-label="關閉牌面大圖">×</button>
-      <div className={`dialog-artwork ${card.isReversed ? 'is-reversed' : ''}`}><img src={card.imageSrc} alt={`${card.nameZh}，${card.isReversed ? '逆位' : '正位'}，塔羅牌插畫`} /></div>
-      <div className="dialog-content">
+      <div className={`dialog-card-art ${card.isReversed ? 'is-reversed' : ''}`}><img src={card.imageSrc} alt={`${card.nameZh}，${card.isReversed ? '逆位' : '正位'}，塔羅牌插畫`} /></div>
+      <div className="dialog-overlay">
         <p className="panel-kicker">{card.position} · {card.isReversed ? 'REVERSED' : 'UPRIGHT'}</p>
-        <h2 id="card-dialog-title">{card.nameZh}</h2><p className="dialog-name-en">{card.nameEn}</p>
-        <span className={card.isReversed ? 'card-orientation reversed' : 'card-orientation'}>{card.isReversed ? '逆位' : '正位'}</span>
-        <p className="dialog-keywords">{card.keywords}</p>
-        <div className="dialog-meaning"><small>這張牌正在回答</small><p>{meaning}</p><small>{card.position}的位置意義</small><p>{card.positionMeaning}</p></div>
-        {reading && <div className="dialog-reading"><small>整體解讀摘要</small><p>{reading.summary}</p></div>}
-        <details className="gpt-prompt"><summary>交給 GPT 延伸解讀</summary><p>可直接複製下方提示詞，貼到 GPT 繼續追問。</p><textarea readOnly value={prompt} aria-label="可複製的 GPT 塔羅解讀提示詞" /><button type="button" onClick={copyPrompt}>複製提示詞</button><span aria-live="polite">{copyStatus}</span></details>
+        <h2 id="card-dialog-title">{card.nameZh}<span className={card.isReversed ? 'card-orientation reversed' : 'card-orientation'}>{card.isReversed ? '逆位' : '正位'}</span></h2>
+        <p className="dialog-name-en">{card.nameEn} · {card.keywords}</p>
+        <p className="dialog-meaning-text">{meaning}</p>
+        <p className="dialog-position-text">{card.position}｜{card.positionMeaning}</p>
       </div>
     </section>
+  </div>;
+}
+
+function StagePrompt({ question, spread, cards }) {
+  const [tone, setTone] = useState('溫和');
+  const [copyStatus, setCopyStatus] = useState('');
+  const prompt = gptPrompt({ question, spread, cards, tone });
+
+  async function copyPrompt() {
+    try {
+      await navigator.clipboard.writeText(prompt);
+      setCopyStatus(`已複製「${tone}」語氣的提示詞，可直接貼到 GPT。`);
+    } catch {
+      setCopyStatus('無法自動複製，請展開預覽手動複製。');
+    }
+  }
+
+  return <div className="stage-prompt">
+    <div className="stage-prompt__head"><small>GPT 延伸解讀</small><p>選一種解讀語氣，複製提示詞後貼到 GPT 繼續追問。</p></div>
+    <div className="stage-prompt__row">
+      <div className="tone-row" role="group" aria-label="解讀語氣">{Object.keys(promptTones).map((item) => <button type="button" key={item} className={tone === item ? 'tone active' : 'tone'} onClick={() => { setTone(item); setCopyStatus(''); }}>{item}</button>)}</div>
+      <button type="button" className="copy-prompt" onClick={copyPrompt}>複製提示詞 ✦</button>
+    </div>
+    <details className="stage-prompt__preview"><summary>預覽提示詞</summary><textarea readOnly value={prompt} aria-label="可複製的 GPT 塔羅解讀提示詞" /></details>
+    <span className="stage-prompt__status" aria-live="polite">{copyStatus}</span>
   </div>;
 }
 
@@ -350,10 +373,11 @@ function useGyroHolo(stageRef) {
   return gyroActive;
 }
 
-function ReadingStage({ spread, cards, revealedCards, loading, reading, onReveal, onOpen, onBack, headingRef }) {
+function ReadingStage({ spread, cards, revealedCards, loading, reading, question, onReveal, onOpen, onBack, headingRef }) {
   const nextIndex = revealedCards.length;
   const stageRef = useRef(null);
   const gyroActive = useGyroHolo(stageRef);
+  const visibleCards = cards.filter((card, index) => revealedCards.includes(index));
   return <section className={`reading-stage ${gyroActive ? 'gyro-active' : ''}`} ref={stageRef} aria-labelledby="reading-stage-title">
     <div className="reading-stage__top"><div><p className="panel-kicker">THE READING · {spread.count} CARDS</p><h1 id="reading-stage-title" ref={headingRef} tabIndex="-1">依照直覺，逐張翻開牌面</h1><p>{spread.name} · {revealedCards.length} / {cards.length} 張已翻開</p></div><button type="button" className="stage-back" onClick={onBack}>回到問題</button></div>
     <p className="stage-instruction" aria-live="polite">{loading ? '牌面正在整理訊息…' : nextIndex < cards.length ? `現在請翻開第 ${nextIndex + 1} 張：${cards[nextIndex].position}` : '所有牌面已展開；可再次點擊任何一張，查看大圖與完整提示詞。'}</p>
@@ -364,6 +388,7 @@ function ReadingStage({ spread, cards, revealedCards, loading, reading, onReveal
       </div>)}
     </div>
     {reading && <div className="stage-reading-result"><article><small>整體解讀</small><p>{reading.summary}</p></article><article><small>下一步建議</small><p>{reading.action}</p></article><article><small>需要留意</small><p>{reading.caution}</p></article></div>}
+    {reading && <StagePrompt question={question} spread={spread} cards={visibleCards} />}
     <p className="stage-disclaimer">這份解讀提供反思與方向，不代替專業醫療、法律或財務建議。</p>
   </section>;
 }
@@ -458,7 +483,7 @@ export default function App() {
         <div className="prompt-list">{questionGroups[category].map((item) => <button type="button" disabled={loading || isChoosingCards} onClick={() => { setQuestion(item); questionRef.current?.focus(); }} key={item}>{item}<span>↗</span></button>)}</div>
       </MagicPanel>
     </div>}
-    {stageOpen && <ReadingStage spread={spread} cards={cards} revealedCards={revealedCards} loading={loading} reading={reading} onReveal={revealCard} onOpen={openCard} onBack={returnToSetup} headingRef={stageHeadingRef} />}
-    {selectedCard && <TarotCardDialog card={selectedCard} question={question} spread={spread} visibleCards={cards.filter((card, index) => revealedCards.includes(index))} reading={reading} onClose={closeCard} />}
+    {stageOpen && <ReadingStage spread={spread} cards={cards} revealedCards={revealedCards} loading={loading} reading={reading} question={question} onReveal={revealCard} onOpen={openCard} onBack={returnToSetup} headingRef={stageHeadingRef} />}
+    {selectedCard && <TarotCardDialog card={selectedCard} onClose={closeCard} />}
   </main>;
 }
