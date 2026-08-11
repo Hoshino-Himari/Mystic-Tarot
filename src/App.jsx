@@ -135,6 +135,7 @@ export default function App() {
 
   return <main className="site-shell">
     <div className="star-field" aria-hidden="true" />
+    <div className="aurora" aria-hidden="true"><i /><i /><i /></div>
     <nav className="topbar"><a href="#top" className="brand"><span>☾</span> 神秘塔羅</a><span>YOUR QUIET READING</span></nav>
     <header className="hero" id="top"><p>給自己的占卜時間</p><h1>讓牌面陪你看見</h1><span>TAROT FOR A PAUSE, NOT A PREDICTION</span><div className="hero-orbit" aria-hidden="true" /></header>
     <div className="app-grid">
