@@ -92,6 +92,14 @@ rim highlight + blur + saturate 就是本站的玻璃語言。
   說明）。圖騰／音階／波符文案在 `mayaSeals`、`mayaTones`。
   已用 2012-12-21＝KIN 207 藍水晶手交叉驗證，改演算法前先跑這兩個錨點。
 
+## 題庫（從這裡挑一個問題）
+
+感情（70 問）、工作（60 問）、自我（內在探問 80 題）三個分類是兩層結構：
+分類 → 情境子分類（`scenarioQuestionGroups`）；金錢、人際維持單層
+（`flatQuestionGroups`）。感情／工作／自我的題目內容由站主提供、
+出處為「珊妮療癒所」（sannie.tw），UI 上必須保留 `.question-credit`
+的來源標註，不要移除。
+
 ## 通用守則
 
 - 所有裝飾動畫都要進 `prefers-reduced-motion: reduce` 的停用清單。
