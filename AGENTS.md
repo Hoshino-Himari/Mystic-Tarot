@@ -76,6 +76,14 @@ rim highlight + blur + saturate 就是本站的玻璃語言。
 注意：它**不能**包在 `<label>` 裡——label 會把 click 轉送給內部按鈕，
 造成「點選項後選單又自己打開」的 bug；要用 `.field` div + `aria-labelledby`。
 
+## 生命靈數分頁（#numerology）
+
+頂欄有兩個分頁（`.nav-tabs`）：塔羅占卜（預設）與生命靈數，用 hash 切換
+（`#numerology`），不引入 router。計算規則：西元生日全數字加總、逐步歸位到
+1–9；第一個 ≤22 的中繼數對應大阿爾克那＝**人格牌**（22＝愚者），最終個位數
+＝**靈魂牌**；過程出現 11／22／33 時附上卓越數說明。兩張牌用現有的
+`/tarot-art` 大牌插畫呈現，數字意義文案在 `numerologyMeanings`。
+
 ## 通用守則
 
 - 所有裝飾動畫都要進 `prefers-reduced-motion: reduce` 的停用清單。

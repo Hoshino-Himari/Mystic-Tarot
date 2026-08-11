@@ -92,6 +92,97 @@ function positionMeaning(spreadId, position) {
   };
   return meanings[spreadId][position];
 }
+const numerologyMeanings = {
+  1: ['開創者', '獨立、意志與行動力是你的底色。你適合先行、開路、把想法變成第一步；課題是學會等待與傾聽，讓別人跟得上你的速度。'],
+  2: ['協調者', '敏感、體貼、擅長傾聽與合作。你能看見別人忽略的細節與情緒；課題是建立界線——「配合」不該是你唯一的相處方式。'],
+  3: ['表達者', '創意、語言與感染力。你天生知道怎麼把感受說成故事；課題是把散落的靈感收攏成完整的作品，而不是停在有趣的開頭。'],
+  4: ['建構者', '穩定、秩序與可靠。你擅長把混亂整理成制度、把承諾做成結果；課題是允許計畫之外的事發生——穩定不等於不變。'],
+  5: ['冒險者', '自由、變化與體驗是你的養分。你學得快、適應力強；課題是分辨「探索」與「逃離」，自由需要一個回得來的地方。'],
+  6: ['照顧者', '愛、責任與療癒。你習慣把身邊的人照顧好，也常被託付信任；課題是把自己也放進照顧名單，付出前先確認自己有餘裕。'],
+  7: ['探尋者', '思考、直覺與對真相的渴望。你不接受表面的答案，喜歡把事情想透；課題是別讓分析變成距離，理解之後記得靠近。'],
+  8: ['實踐者', '力量、目標與豐盛。你對成果與影響力有天生的嗅覺；課題是分清「掌控」與「承擔」——真正的力量包含允許別人幫你。'],
+  9: ['夢想家', '慈悲、理想與給予。你容易看見更大的圖像，也願意為別人多走一步；課題是學會收尾與收下——接受也是給予的一部分。'],
+};
+
+const masterNotes = {
+  11: '計算過程出現卓越數 11：你的直覺與感受力比一般 2 號人更敏銳，容易接收靈感與他人的情緒，記得留時間讓自己安靜下來。',
+  22: '計算過程出現卓越數 22：你有把宏大願景落地的潛力，是「建築師」等級的 4；課題是別被完美藍圖困住，從小規模開始蓋。',
+  33: '計算過程出現卓越數 33：你是帶著更深大愛與療癒特質的 6；課題是在服務他人的同時，守住自己的能量邊界。',
+};
+
+function digitSum(value) { return String(value).split('').reduce((total, ch) => total + Number(ch), 0); }
+
+function NumerologyPage() {
+  const [year, setYear] = useState('');
+  const [month, setMonth] = useState('');
+  const [day, setDay] = useState('');
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState('');
+
+  function calculate() {
+    const y = Number(year); const m = Number(month); const d = Number(day);
+    const date = new Date(y, m - 1, d);
+    if (!year || !month || !day || y < 1000 || y > 9999 || date.getFullYear() !== y || date.getMonth() !== m - 1 || date.getDate() !== d) {
+      setError('請輸入完整且真實存在的西元生日，例如 1998 / 7 / 23。'); setResult(null); return;
+    }
+    setError('');
+    const digits = `${y}${String(m).padStart(2, '0')}${String(d).padStart(2, '0')}`;
+    const sums = [digitSum(digits)];
+    while (sums[sums.length - 1] > 9) sums.push(digitSum(sums[sums.length - 1]));
+    const lifeNumber = sums[sums.length - 1];
+    const personalityNumber = sums.find((sum) => sum <= 22);
+    const masters = [...new Set(sums.filter((sum) => sum === 11 || sum === 22 || sum === 33))];
+    setResult({
+      digits, sums, lifeNumber, masters,
+      soulCard: majorArcana[lifeNumber],
+      personalityCard: majorArcana[personalityNumber === 22 ? 0 : personalityNumber],
+    });
+  }
+
+  const steps = result ? [
+    `${result.digits.split('').join(' + ')} = ${result.sums[0]}`,
+    ...result.sums.slice(0, -1).map((sum, index) => `${String(sum).split('').join(' + ')} = ${result.sums[index + 1]}`),
+  ] : [];
+  const sameCard = result && result.soulCard === result.personalityCard;
+
+  return <div className="app-grid">
+    <MagicPanel className="numerology-panel">
+      <p className="panel-kicker">01 · YOUR BIRTH NUMBERS</p><h2>輸入你的西元生日</h2><p className="panel-intro">生命靈數把生日的每個數字加總、再歸位成 1–9，映照你這一生的天賦與課題；中間的加總還會對應一張大阿爾克那，作為你的塔羅靈魂牌。</p>
+      <div className="field"><span className="field-label">西元生日</span>
+        <div className="birth-row">
+          <input inputMode="numeric" maxLength={4} placeholder="1998" aria-label="西元年" value={year} onChange={(event) => setYear(event.target.value.replace(/\D/g, ''))} />
+          <span className="unit">/</span>
+          <input inputMode="numeric" maxLength={2} placeholder="7" aria-label="月" value={month} onChange={(event) => setMonth(event.target.value.replace(/\D/g, ''))} />
+          <span className="unit">/</span>
+          <input inputMode="numeric" maxLength={2} placeholder="23" aria-label="日" value={day} onChange={(event) => setDay(event.target.value.replace(/\D/g, ''))} />
+        </div>
+      </div>
+      <div className="actions"><MagicButton className="draw-button" onClick={calculate}>計算生命靈數 <span>✦</span></MagicButton></div>
+      {error && <p className="error">{error}</p>}
+      {result && <div className="calc-steps" aria-label="計算過程">{steps.map((line) => <div key={line}>{line}</div>)}</div>}
+      {result && result.masters.map((master) => <p className="master-note" key={master}>{masterNotes[master]}</p>)}
+    </MagicPanel>
+    <MagicPanel className="numerology-result">
+      <p className="panel-kicker">02 · LIFE PATH NUMBER</p><h2>{result ? '你的生命靈數' : '結果會在這裡展開'}</h2>
+      {!result && <div className="empty-card"><span>☾</span><b>尚未計算</b><p>在左側輸入生日，數字與你的靈魂牌就會在這裡揭曉。</p><small>LIFE PATH NUMBER</small></div>}
+      {result && <>
+        <div className="life-number"><b>{result.lifeNumber}</b><div><h3>{numerologyMeanings[result.lifeNumber][0]}</h3><p>{numerologyMeanings[result.lifeNumber][1]}</p></div></div>
+        <div className="soul-cards">
+          <figure className="soul-card">
+            <div className="soul-card__art"><img src={result.soulCard.imageSrc} alt={result.soulCard.nameZh} /></div>
+            <figcaption><small>靈魂牌 · 內在渴望</small><b>{result.soulCard.nameZh}</b><span>{result.soulCard.keywords}</span><p>{result.soulCard.upright}</p></figcaption>
+          </figure>
+          {!sameCard && <figure className="soul-card">
+            <div className="soul-card__art"><img src={result.personalityCard.imageSrc} alt={result.personalityCard.nameZh} /></div>
+            <figcaption><small>人格牌 · 外在樣貌</small><b>{result.personalityCard.nameZh}</b><span>{result.personalityCard.keywords}</span><p>{result.personalityCard.upright}</p></figcaption>
+          </figure>}
+        </div>
+        {sameCard ? <p className="soul-note">你的靈魂牌與人格牌是同一張——內在渴望與外在樣貌一致，你給人的印象，就是你真正想成為的樣子。</p> : <p className="soul-note">人格牌是別人眼中的你，靈魂牌是你內在真正的渴望；兩張一起看，就是「你如何走向自己」的路線圖。</p>}
+      </>}
+    </MagicPanel>
+  </div>;
+}
+
 function MagicButton({ className = '', children, ...props }) {
   return <button type="button" className={`magic-button ${className}`} {...props}>
     <span className="magic-button__shadow" aria-hidden="true" />
@@ -472,6 +563,7 @@ export default function App() {
   const [stageOpen, setStageOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [view, setView] = useState(() => (typeof window !== 'undefined' && window.location.hash === '#numerology' ? 'numerology' : 'tarot'));
   const cardOpenerRef = useRef(null);
   const stageHeadingRef = useRef(null);
   const questionRef = useRef(null);
@@ -499,12 +591,19 @@ export default function App() {
 
   useEffect(() => { if (stageOpen) stageHeadingRef.current?.focus(); }, [stageOpen]);
 
+  useEffect(() => {
+    function syncView() { setView(window.location.hash === '#numerology' ? 'numerology' : 'tarot'); }
+    window.addEventListener('hashchange', syncView);
+    return () => window.removeEventListener('hashchange', syncView);
+  }, []);
+
   return <main className="site-shell">
     <div className="star-field" aria-hidden="true" />
     <div className="aurora" aria-hidden="true"><i /><i /><i /></div>
-    <nav className="topbar"><a href="#top" className="brand"><span>☾</span> 神秘塔羅</a><span>YOUR QUIET READING</span></nav>
-    <header className="hero" id="top"><p>給自己的占卜時間</p><ParticleTitle /><div className="hero-orbit" aria-hidden="true" /></header>
-    {!stageOpen && <div className="app-grid">
+    <nav className="topbar"><a href="#top" className="brand"><span>☾</span> 神秘塔羅</a><div className="nav-tabs"><a href="#tarot" className={view === 'tarot' ? 'active' : ''} aria-current={view === 'tarot' ? 'page' : undefined}>塔羅占卜</a><a href="#numerology" className={view === 'numerology' ? 'active' : ''} aria-current={view === 'numerology' ? 'page' : undefined}>生命靈數</a></div></nav>
+    <header className="hero" id="top"><p>{view === 'numerology' ? '認識你的數字' : '給自己的占卜時間'}</p><ParticleTitle /><div className="hero-orbit" aria-hidden="true" /></header>
+    {view === 'numerology' && <NumerologyPage />}
+    {view === 'tarot' && !stageOpen && <div className="app-grid">
       <MagicPanel className="question-panel">
         <p className="panel-kicker">01 · SET YOUR INTENTION</p><h2>先說說你在意的事</h2><p className="panel-intro">選擇牌陣，然後寫下此刻真正想問的問題。不需要完美，只要誠實。</p>
         <div className="field"><span className="field-label" id="spread-select-label">選擇牌陣</span><SpreadSelect options={spreads} value={spreadId} disabled={loading || isChoosingCards} labelledBy="spread-select-label" onChange={setSpreadId} /></div><div className="spread-detail"><p>{spread.name} · {spread.count} 張牌</p><b>{spread.usage}</b><span>{spread.description}</span><small>抽牌位置：{spread.positions.join(' · ')}</small></div>
@@ -519,7 +618,7 @@ export default function App() {
         <div className="prompt-list">{questionGroups[category].map((item) => <button type="button" disabled={loading || isChoosingCards} onClick={() => { setQuestion(item); questionRef.current?.focus(); }} key={item}>{item}<span>↗</span></button>)}</div>
       </MagicPanel>
     </div>}
-    {stageOpen && <ReadingStage spread={spread} cards={cards} revealedCards={revealedCards} loading={loading} question={question} onReveal={revealCard} onOpen={openCard} onBack={returnToSetup} headingRef={stageHeadingRef} />}
-    {selectedCard && <TarotCardDialog card={selectedCard} onClose={closeCard} />}
+    {view === 'tarot' && stageOpen && <ReadingStage spread={spread} cards={cards} revealedCards={revealedCards} loading={loading} question={question} onReveal={revealCard} onOpen={openCard} onBack={returnToSetup} headingRef={stageHeadingRef} />}
+    {view === 'tarot' && selectedCard && <TarotCardDialog card={selectedCard} onClose={closeCard} />}
   </main>;
 }
