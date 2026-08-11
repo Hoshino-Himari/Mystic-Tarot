@@ -69,6 +69,13 @@ rim highlight + blur + saturate 就是本站的玻璃語言。
 `api/reading.js` 因此目前沒有被前端呼叫，除非站主要求，不要把站內解讀加回來。
 五張牌陣（choice/love）用緊湊雙欄 + 底部置中，不要回到有空心中欄的版型。
 
+## 牌陣選單（.spread-select）
+
+原生 `<select>` 已換成 GodUI Combobox（fixed-enum 模式）的純 CSS 移植：
+毛玻璃彈出清單、金色選中列 + 打勾、鍵盤方向鍵／Home／End／Esc 操作。
+注意：它**不能**包在 `<label>` 裡——label 會把 click 轉送給內部按鈕，
+造成「點選項後選單又自己打開」的 bug；要用 `.field` div + `aria-labelledby`。
+
 ## 通用守則
 
 - 所有裝飾動畫都要進 `prefers-reduced-motion: reduce` 的停用清單。

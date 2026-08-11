@@ -104,6 +104,54 @@ function MagicPanel({ className = '', children }) {
   return <section className={`magic-panel ${className}`}>{children}</section>;
 }
 
+// GodUI Combobox（searchable: false 模式）移植：取代原生 select 的牌陣選單。
+function SpreadSelect({ options, value, disabled, labelledBy, onChange }) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef(null);
+  const listRef = useRef(null);
+  const triggerRef = useRef(null);
+  const selected = options.find((item) => item.id === value) ?? options[0];
+
+  useEffect(() => {
+    if (!open) return undefined;
+    function closeOnOutside(event) { if (!rootRef.current?.contains(event.target)) setOpen(false); }
+    document.addEventListener('pointerdown', closeOnOutside);
+    return () => document.removeEventListener('pointerdown', closeOnOutside);
+  }, [open]);
+
+  useEffect(() => {
+    if (open) listRef.current?.querySelector('[aria-selected="true"]')?.focus();
+  }, [open]);
+
+  function pick(id) { onChange(id); setOpen(false); triggerRef.current?.focus(); }
+
+  function handleListKeyDown(event) {
+    const items = [...listRef.current.querySelectorAll('[role="option"]')];
+    const index = items.indexOf(document.activeElement);
+    if (event.key === 'ArrowDown') { event.preventDefault(); items[(index + 1) % items.length]?.focus(); }
+    if (event.key === 'ArrowUp') { event.preventDefault(); items[(index - 1 + items.length) % items.length]?.focus(); }
+    if (event.key === 'Home') { event.preventDefault(); items[0]?.focus(); }
+    if (event.key === 'End') { event.preventDefault(); items[items.length - 1]?.focus(); }
+    if (event.key === 'Escape') { setOpen(false); triggerRef.current?.focus(); }
+    if (event.key === 'Tab') setOpen(false);
+  }
+
+  return <div className="spread-select" ref={rootRef}>
+    <button type="button" ref={triggerRef} className="spread-select__trigger" disabled={disabled} aria-haspopup="listbox" aria-expanded={open} aria-labelledby={labelledBy} onClick={() => setOpen(!open)} onKeyDown={(event) => { if (event.key === 'ArrowDown' && !open) { event.preventDefault(); setOpen(true); } }}>
+      <b>{selected.name}</b>
+      <span className="count">{selected.count} 張牌</span>
+      <svg className={open ? 'chev is-open' : 'chev'} aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+    </button>
+    {open && <ul className="spread-select__list" role="listbox" aria-labelledby={labelledBy} ref={listRef} onKeyDown={handleListKeyDown}>
+      {options.map((item) => <li key={item.id} role="option" tabIndex={-1} aria-selected={item.id === value} onClick={() => pick(item.id)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); pick(item.id); } }}>
+        <b>{item.name}</b>
+        <span className="count">{item.count} 張牌</span>
+        <svg className="check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="m5 13 4 4L19 7" /></svg>
+      </li>)}
+    </ul>}
+  </div>;
+}
+
 function ParticleTitle() {
   const canvasRef = useRef(null);
   const pointerRef = useRef({ active: false, x: 0, y: 0 });
@@ -459,7 +507,7 @@ export default function App() {
     {!stageOpen && <div className="app-grid">
       <MagicPanel className="question-panel">
         <p className="panel-kicker">01 · SET YOUR INTENTION</p><h2>先說說你在意的事</h2><p className="panel-intro">選擇牌陣，然後寫下此刻真正想問的問題。不需要完美，只要誠實。</p>
-        <label>選擇牌陣<select value={spreadId} disabled={loading || isChoosingCards} onChange={(event) => setSpreadId(event.target.value)}>{spreads.map((item) => <option key={item.id} value={item.id}>{item.name} · {item.count} 張牌</option>)}</select></label><div className="spread-detail"><p>{spread.name} · {spread.count} 張牌</p><b>{spread.usage}</b><span>{spread.description}</span><small>抽牌位置：{spread.positions.join(' · ')}</small></div>
+        <div className="field"><span className="field-label" id="spread-select-label">選擇牌陣</span><SpreadSelect options={spreads} value={spreadId} disabled={loading || isChoosingCards} labelledBy="spread-select-label" onChange={setSpreadId} /></div><div className="spread-detail"><p>{spread.name} · {spread.count} 張牌</p><b>{spread.usage}</b><span>{spread.description}</span><small>抽牌位置：{spread.positions.join(' · ')}</small></div>
         <label>你的問題<textarea ref={questionRef} value={question} disabled={loading || isChoosingCards} onChange={(event) => setQuestion(event.target.value)} placeholder="例如：我接下來三個月最該專注的是什麼？" /></label>
         <div className="actions"><MagicButton className="draw-button" disabled={loading || isChoosingCards} onClick={draw}>{loading ? '正在翻閱牌面…' : '抽牌解讀'} <span>✦</span></MagicButton><button className="reset-button" disabled={loading} onClick={reset}>重設</button></div>
         {error && <p className="error">{error}</p>}
