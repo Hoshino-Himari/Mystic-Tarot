@@ -251,6 +251,74 @@ body {
 .magic-panel:hover::before { opacity: 1; }
 .magic-panel > * { z-index: 1; }
 
+/* Claude's liquid-glass preview, adapted for the live React panels. */
+.glass-distortion-filter {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.magic-panel.liquid-glass-card {
+  isolation: isolate;
+  overflow: hidden;
+  border-color: rgba(235, 243, 255, .26);
+  background:
+    linear-gradient(135deg, rgba(55, 67, 115, .42), rgba(9, 13, 35, .25)),
+    rgba(8, 11, 28, .2);
+  box-shadow:
+    0 0 22px -9px rgba(255, 255, 255, .38),
+    0 28px 70px rgba(0, 0, 0, .38),
+    inset 0 1px rgba(255, 255, 255, .24),
+    inset 0 -1px rgba(125, 153, 224, .16);
+}
+
+.magic-panel__liquid {
+  position: absolute;
+  z-index: 0;
+  inset: -8px;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: .82;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(255, 255, 255, .17), transparent 26%),
+    radial-gradient(circle at 92% 104%, rgba(118, 166, 255, .14), transparent 31%),
+    linear-gradient(118deg, rgba(255, 255, 255, .11), transparent 29%, rgba(155, 189, 255, .065) 67%, transparent 88%);
+  filter: url('#glass-distortion');
+}
+
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .magic-panel.liquid-glass-card {
+    -webkit-backdrop-filter: blur(23px) saturate(132%);
+    backdrop-filter: blur(23px) saturate(132%);
+  }
+
+  .magic-panel__liquid {
+    -webkit-backdrop-filter: blur(14px) saturate(125%);
+    backdrop-filter: blur(14px) saturate(125%);
+  }
+}
+
+.magic-panel.liquid-glass-card::before {
+  z-index: 2;
+  opacity: 1;
+  border-radius: inherit;
+  background: transparent;
+  box-shadow: inset 0 0 13px -4px rgba(255, 255, 255, .76);
+}
+
+.magic-panel.liquid-glass-card::after {
+  z-index: 1;
+  opacity: .9;
+  background: linear-gradient(118deg, rgba(255, 255, 255, .18), transparent 25%, rgba(165, 193, 255, .06) 61%, transparent 80%);
+}
+
+.magic-panel > .magic-panel__content {
+  position: relative;
+  z-index: 3;
+}
+
 select,
 textarea {
   border-color: rgba(222, 233, 255, .15);
