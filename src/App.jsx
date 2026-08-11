@@ -106,6 +106,76 @@ const numerologyMeanings = {
 
 const cardForNumber = (value) => majorArcana[value === 22 ? 0 : value];
 
+// 13 月亮曆（Dreamspell）：20 太陽圖騰 [顏色, 名稱, 特質]。
+const mayaSeals = [
+  ['紅', '龍', '創始與滋養的能量，帶著開創與照顧族人的本能，適合當開路的人。'],
+  ['白', '風', '傳遞訊息的風，重視溝通、語言與靈感——把想法說出去就是你的天賦。'],
+  ['藍', '夜', '夢想家與直覺者，內在有豐盛的夢境世界，擅長把夢化成藍圖。'],
+  ['黃', '種子', '耐心的播種者，相信時間的力量，擅長讓想法慢慢發芽長成。'],
+  ['紅', '蛇', '身體智慧與生命力，本能敏銳、熱情有爆發力，記得傾聽身體的訊號。'],
+  ['白', '世界橋', '天生的橋樑與連結者，擅長放下與斷捨離，串起不同世界的人事物。'],
+  ['藍', '手', '療癒與完成之手，動手做就是你的魔法，透過實作把事情帶到完成。'],
+  ['黃', '星星', '美與藝術的化身，對美感敏銳，把生活過成作品就是你的使命。'],
+  ['紅', '月', '淨化的水，情感豐沛、感受力強，像月光一樣療癒身邊的人。'],
+  ['白', '狗', '忠誠與愛，重情重義，用真心對待世界，也記得先愛自己。'],
+  ['藍', '猴', '遊戲與幽默的魔法師，用玩心破解嚴肅，提醒大家人生是一場遊戲。'],
+  ['黃', '人', '自由意志的智者，重視選擇與自主，用智慧與影響力引導他人。'],
+  ['紅', '天行者', '探索空間的旅人，不安於室、勇於冒險，把未知走成道路。'],
+  ['白', '巫師', '魅力與魔法的容器，直覺與專注是你的法器，能接收宇宙的訊息。'],
+  ['藍', '鷹', '高空的視野，擅長看見全局與未來，為身邊的人給出方向感。'],
+  ['黃', '戰士', '無畏的提問者，敢挑戰權威與框架，用理性與勇氣開路。'],
+  ['紅', '地球', '與地球共振的導航者，重視腳踏實地與同步性，跟著徵兆走。'],
+  ['白', '鏡', '真相之鏡，誠實映照自己與他人，清晰就是你的力量。'],
+  ['藍', '風暴', '蛻變的催化劑，天生帶著改變的能量，在轉化中一次次重生。'],
+  ['黃', '太陽', '無條件的愛與照耀，天生的光源，溫暖並啟發身邊的每個人。'],
+];
+
+// 13 銀河音階 [名稱, 課題]。
+const mayaTones = [
+  ['磁性', '吸引目的——常問自己「我的目的是什麼」，目標清楚能量就會聚攏。'],
+  ['月亮', '面對挑戰——在二元的擺盪中練習穩定，挑戰就是你的養分。'],
+  ['電力', '啟動服務——把能量用在對的地方，行動就會帶電。'],
+  ['自我存在', '定義形式——把想法整理出形狀，你需要自己的方法與空間。'],
+  ['超頻', '綻放光芒——授權自己站上舞台，你的存在本身就有力量。'],
+  ['韻律', '組織平衡——在生活中找到自己的節奏，平衡是動態的。'],
+  ['共振', '調頻歸位——先回到中心，再帶著頻率影響環境。'],
+  ['銀河星系', '活出誠信——讓你相信的與你做出來的一致。'],
+  ['太陽', '完成意圖——把脈動化為實現，你有把事情帶到終點的力量。'],
+  ['行星', '顯化完美——把成果做到位，你是天生的顯化者。'],
+  ['光譜', '釋放消融——學會放手與解構，鬆開才有新的空間。'],
+  ['水晶', '合作奉獻——在群體中貢獻你的清晰，一起完成比獨自完成更遠。'],
+  ['宇宙', '超越當下——帶著整趟旅程回到存在本身，享受就是完成。'],
+];
+
+// Dreamspell 錨點：2013-07-26 = Kin 164（黃銀河星系種子）；閏日 2/29 不計數。
+function mayaKin(y, m, d) {
+  const anchor = Date.UTC(2013, 6, 26);
+  const target = Date.UTC(y, m - 1, d);
+  const step = target >= anchor ? 86400000 : -86400000;
+  let delta = 0;
+  for (let t = anchor; t !== target; t += step) {
+    const next = new Date(t + step);
+    if (!(next.getUTCMonth() === 1 && next.getUTCDate() === 29)) delta += step > 0 ? 1 : -1;
+  }
+  return ((163 + delta) % 260 + 260) % 260 + 1;
+}
+
+function mayaProfile(y, m, d) {
+  const kin = mayaKin(y, m, d);
+  const sealIndex = (kin - 1) % 20;
+  const toneIndex = (kin - 1) % 13;
+  const wavespellSeal = mayaSeals[(kin - 1 - toneIndex) % 20];
+  const [color, seal, sealMeaning] = mayaSeals[sealIndex];
+  const [tone, toneMeaning] = mayaTones[toneIndex];
+  return {
+    kin, color, seal, sealMeaning, tone, toneMeaning,
+    toneNumber: toneIndex + 1,
+    fullName: `${color}${tone}${seal}`,
+    wavespell: `${wavespellSeal[0]}${wavespellSeal[1]}波符`,
+    isLeapBirthday: m === 2 && d === 29,
+  };
+}
+
 // 塔羅命數：生日加總（>22 再加總）對應大阿爾克那的處事態度，[優勢, 劣勢]。
 const destinyMeanings = {
   0: ['天生自由、樂觀率真，勇於嘗試新事物、不被過去綁住，凡事願意「先做了再說」，常為身邊的人帶來新鮮感與行動力。', '熱度來得快去得也快，計畫容易做一半就跳去下一個；有時太天真、缺乏防備而吃虧，也可能因衝動做出讓自己後悔的決定。'],
@@ -143,12 +213,14 @@ function numerologyPrompt({ result, steps, tone }) {
 計算過程：${steps.join('；')}
 塔羅命數：${result.destinyNumber}（${destinyCard.nameZh} ${destinyCard.nameEn}${result.destinyNumber === 22 ? '，加總 22 對應 0 愚人' : ''}）
 ${refLines ? `同時參考：${refLines}\n` : ''}生命靈數：${result.lifeNumber}
+馬雅曆（13 月亮曆）：KIN ${result.maya.kin} · ${result.maya.fullName}（${result.maya.wavespell}）
 
 請依序告訴我：
 1. 塔羅命數主牌反映的處事態度與決策慣性：優勢與劣勢各自會怎麼出現在我的工作、感情與人際裡（各舉一個具體情境）。
 2. ${refLines ? '主牌與同時參考的牌如何交互作用：哪些特質互補、哪些會互相拉扯。' : '這張主牌單獨出現時，最容易被我自己忽略的一面是什麼。'}
 3. 生命靈數 ${result.lifeNumber} 的天賦與課題，和塔羅命數合起來看，我最需要留意的一個盲點。
-4. 給我 1–3 個小而可執行的日常練習，幫我把優勢用出來、接住劣勢。
+4. 我的馬雅主印記（圖騰、音階與波符）補充了哪些命數沒說到的面向？和塔羅命數有沒有互相呼應或互補的主題？
+5. 綜合以上三套系統，給我 1–3 個小而可執行的日常練習，幫我把優勢用出來、接住劣勢。
 
 最後請用一句話總結「我是什麼樣的人」。
 
@@ -204,6 +276,7 @@ function NumerologyPage() {
       lifeNumber: sums[sums.length - 1],
       destinyNumber: sums[destinyIndex],
       refs: sums.slice(destinyIndex + 1), // 命數 10 以上要同時參考的後續加總
+      maya: mayaProfile(y, m, d),
     });
   }
 
@@ -253,6 +326,17 @@ function NumerologyPage() {
           </div>)}
         </div>}
         <div className="life-number life-number--mini"><b>{result.lifeNumber}</b><div><h3>生命靈數 · {numerologyMeanings[result.lifeNumber][0]}</h3><p>{numerologyMeanings[result.lifeNumber][1]}</p></div></div>
+        <div className="maya-block">
+          <small className="maya-kicker">13 MOON · MAYAN KIN</small>
+          <div className="maya-kin">
+            <span className={`maya-chip maya-chip--${result.maya.color === '紅' ? 'red' : result.maya.color === '白' ? 'white' : result.maya.color === '藍' ? 'blue' : 'yellow'}`}>KIN {result.maya.kin}</span>
+            <b>{result.maya.fullName}</b>
+            <span className="maya-ws">{result.maya.wavespell}</span>
+          </div>
+          <p className="maya-copy"><b>圖騰 · {result.maya.color}{result.maya.seal}</b>{result.maya.sealMeaning}</p>
+          <p className="maya-copy"><b>音階 {result.maya.toneNumber} · {result.maya.tone}</b>{result.maya.toneMeaning}</p>
+          {result.maya.isLeapBirthday && <p className="maya-copy maya-leap">2/29 出生在 13 月亮曆中是曆法之外的「無時間之日」，這裡以 2/28 的 Kin 作為參考。</p>}
+        </div>
         <p className="soul-note">命數反映的是你不自覺的決策方式與處事態度——優勢和劣勢往往是同一件事的兩面，看見了，就能在需要的時候提醒自己調整。</p>
         <NumerologyPrompt result={result} steps={steps} />
       </>}

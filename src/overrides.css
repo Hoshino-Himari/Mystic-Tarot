@@ -128,6 +128,29 @@
 .ref-card__copy b { display: block; margin-bottom: 6px; color: #f3d28b; font-size: 14px; }
 .ref-card__copy p { margin: 0 0 6px; color: #c9c2d6; font-size: 11.5px; line-height: 1.7; }
 
+.maya-block { margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(222, 233, 255, .1); }
+.maya-kicker { display: block; color: #b9a97e; font: 10px "DM Mono", monospace; letter-spacing: .12em; }
+
+.maya-kin { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 9px 0 11px; }
+.maya-kin > b { color: #f3ecdb; font-size: 19px; letter-spacing: .04em; }
+.maya-ws { padding: 3px 9px; border-radius: 999px; background: rgba(170, 153, 221, .14); color: #cfc2ee; font-size: 11px; }
+
+.maya-chip {
+  padding: 4px 11px;
+  border-radius: 999px;
+  font: 700 11px "DM Mono", monospace;
+  letter-spacing: .06em;
+}
+
+.maya-chip--red { background: rgba(224, 86, 98, .16); color: #f5a0a8; box-shadow: inset 0 0 0 1px rgba(224, 86, 98, .4); }
+.maya-chip--white { background: rgba(235, 233, 244, .12); color: #efedf7; box-shadow: inset 0 0 0 1px rgba(235, 233, 244, .38); }
+.maya-chip--blue { background: rgba(77, 159, 216, .15); color: #9fcdf0; box-shadow: inset 0 0 0 1px rgba(77, 159, 216, .42); }
+.maya-chip--yellow { background: rgba(234, 193, 107, .15); color: #f0cd7e; box-shadow: inset 0 0 0 1px rgba(234, 193, 107, .42); }
+
+.maya-copy { margin: 0 0 8px; color: #d0c9dc; font-size: 12.5px; line-height: 1.8; }
+.maya-copy b { display: inline-block; margin-right: 7px; color: #e9d9ab; font-size: 12px; }
+.maya-leap { color: #b9aed8; font-size: 11.5px; }
+
 .numerology-prompt { width: 100%; margin: 18px 0 0; }
 
 .life-number--mini { margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(222, 233, 255, .1); }
