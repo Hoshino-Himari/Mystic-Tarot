@@ -17,6 +17,38 @@
 .nav-tabs a:hover { color: #f3ecdb; border-color: rgba(255, 255, 255, .16); }
 .nav-tabs a.active { color: #f3d28b; border-color: rgba(234, 193, 107, .5); background: rgba(234, 193, 107, .1); }
 
+/* Reading modes */
+.mode-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 9px; }
+.mode-hint { margin: 9px 1px 0; color: #a29ab3; font-size: 11.5px; line-height: 1.6; }
+
+/* Lost item compass result */
+.lost-result {
+  width: min(680px, 100%);
+  margin: 0 auto 18px;
+  padding: 16px;
+  border: 1px solid rgba(234, 193, 107, .3);
+  border-radius: 16px;
+  background: rgba(20, 16, 40, .6);
+  box-shadow: inset 0 1px rgba(255, 255, 255, .08);
+}
+
+.lost-result small { display: block; margin-bottom: 10px; color: #ead19a; font: 10px "DM Mono", monospace; letter-spacing: .12em; }
+.lost-result p { margin: 0 0 9px; color: #e2dcec; font-size: 13.5px; line-height: 1.8; }
+
+.lost-result p b {
+  display: inline-block;
+  margin-right: 8px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: rgba(234, 193, 107, .15);
+  color: #f0cd7e;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.lost-result__direction { color: #f3ecdb; }
+.lost-result__reversed b { background: rgba(255, 162, 181, .13); color: #f1aab8; }
+
 /* Question bank sub-scenes */
 .subcategory-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 
@@ -994,7 +1026,8 @@ textarea {
 .spread-love { grid-template-areas: "a c" "b d" "e e"; }
 
 /* 無牌陣：按抽出順序排，不做位置框架。 */
-.spread-free-1 { grid-template-columns: 1fr; grid-template-areas: "a"; width: min(340px, 100%); }
+.spread-free-1,
+.spread-lost { grid-template-columns: 1fr; grid-template-areas: "a"; width: min(340px, 100%); }
 .spread-free-3 { grid-template-areas: "a b c"; }
 
 .spread-free-5 {

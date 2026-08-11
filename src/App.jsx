@@ -48,6 +48,52 @@ const scenarioQuestionGroups = {
 
 const questionCategories = ['感情', '工作', '金錢', '人際', '自我'];
 
+// 占卜模式：改變提問視角與 GPT 提示詞；尋物另走宮廷牌方位邏輯。
+const readingModes = {
+  一般: { hint: '最經典的自由提問占卜。', placeholder: '例如：我接下來三個月最該專注的是什麼？' },
+  高我對話: { hint: '把問題交給更高視角的自己，取得最高善的指引。', placeholder: '例如：親愛的高我，關於現在這件事，我該怎麼想、怎麼行動？' },
+  寵物占卜: { hint: '把毛孩的狀態與心聲，透過牌面翻譯給你。', placeholder: '例如：Nimo 最近一直對我叫，他想對我說什麼？' },
+  投資指引: { hint: '把牌面當決策反思，不是投資建議——盈虧自負，動作要快。', placeholder: '例如：A 與 B 兩個標的，哪一個更符合我穩定成長的目標？' },
+  尋物: { hint: '抽一張宮廷牌，用雙元素推方位。', placeholder: '例如：我的畢業證書可能在哪裡？' },
+};
+
+const modeDirectives = {
+  高我對話: '這是一場「與高我對話」的占卜：請以我的高我口吻回應——溫柔、有智慧、不評判。開頭先用一句高我想對我說的話，結尾給我一個最高善的提醒。',
+  寵物占卜: '這是一場「寵物占卜」：問題的主角是我的毛孩。請把牌面解讀成毛孩當前的狀態與想對我說的心聲，並用毛孩的口吻寫一小段話給我；涉及健康或異常行為時，請提醒我以獸醫的專業判斷為準。',
+  投資指引: '這是一場「投資指引」占卜：請把牌面當作決策反思的工具，分析每個選項或方向的能量、我目前的心態盲點與風險承受狀態。請明確聲明這不是投資建議，市場有風險，決定與盈虧由我自己負責。',
+  尋物: '這是一場「尋物占卜」，抽到的是宮廷牌。請用元素對應方位（權杖＝火＝南、聖杯＝水＝西、寶劍＝風＝東、錢幣＝土＝北；國王＝火、皇后＝水、騎士＝風、侍者＝土）推算兩個元素的方位交集，並根據牌組的環境特質，給我 3 個具體可能的地點與一個尋找策略；若是逆位，提醒我東西可能被移動過、或卡在看不見的夾縫裡。',
+};
+
+const lostSpread = { id: 'lost', name: '尋物 · 宮廷牌', count: 1, positions: ['指引方位'], description: '一張宮廷牌，雙元素推方位。', usage: '' };
+
+const suitElements = { 權杖: ['火', '南'], 聖杯: ['水', '西'], 寶劍: ['風', '東'], 錢幣: ['土', '北'] };
+const rankElements = { 國王: ['火', '南'], 皇后: ['水', '西'], 騎士: ['風', '東'], 侍者: ['土', '北'] };
+const suitPlaces = {
+  權杖: '熱源與活動處——陽台、爐火附近、常走動的動線、運動或戶外用品旁。',
+  聖杯: '有水與私密處——浴室、水槽或飲水機附近、臥室抽屜、有紀念意義的物品旁。',
+  寶劍: '高處與風口——櫃子上層、窗邊、冷氣電扇附近、文件堆與金屬物件之間。',
+  錢幣: '低處與收納處——包包錢包、收納箱、床底與地板、跟錢或工作用品放在一起。',
+};
+const courtRanks = Object.keys(rankElements);
+const oppositeDirections = { 南: '北', 北: '南', 東: '西', 西: '東' };
+
+function lostItemHints(card) {
+  const suit = Object.keys(suitElements).find((item) => card.nameZh.startsWith(item));
+  const rank = courtRanks.find((item) => card.nameZh.endsWith(item));
+  const [suitElement, suitDirection] = suitElements[suit];
+  const [rankElement, rankDirection] = rankElements[rank];
+  let direction;
+  if (suitDirection === rankDirection) direction = `正${suitDirection}方——雙重${suitElement}能量，方位訊號很強`;
+  else if (oppositeDirections[suitDirection] === rankDirection) direction = '兩個方位互相拉扯——優先找原地附近與高低差的位置（櫃頂、床底、夾層）';
+  else {
+    const pair = [suitDirection, rankDirection];
+    const eastWest = pair.find((d) => d === '東' || d === '西');
+    const northSouth = pair.find((d) => d === '南' || d === '北');
+    direction = `${eastWest}${northSouth}方一帶`;
+  }
+  return { suit, rank, suitElement, rankElement, direction, place: suitPlaces[suit] };
+}
+
 const questionTips = [
   ['問現況', '先聚焦一件正在發生的事。'],
   ['問自己的選擇', '把焦點放回你能回應與行動的部分。'],
@@ -121,6 +167,7 @@ function positionMeaning(spreadId, position) {
     core: { 問題核心: '聚焦這件事真正的關鍵。', 障礙: '提醒目前最需要正視或調整的環節。', 對策: '提供一個可以開始實踐的方向。', 優勢: '指出你已經具備、可以善用的資源與能力。' },
     choice: { '選項 A 的狀態': '呈現第一個方向當下的條件與氛圍。', '選項 B 的狀態': '呈現第二個方向當下的條件與氛圍。', 'A 可能結果': '顯示若選擇 A，可能出現的發展。', 'B 可能結果': '顯示若選擇 B，可能出現的發展。', 我的狀態: '提醒你做選擇前最需要留意的準備與需求。' },
     love: { 我的狀態: '看見你此刻帶進這段關係的感受與期待。', 我對關係的態度: '覺察你在這段關係中的互動方式與需求。', 對方的狀態: '提供理解對方目前狀態的參考角度。', 對方對關係的態度: '觀察你感受到的互動訊號與節奏。', 可能結果: '呈現當下條件下的可能走向，而非固定結論。' },
+    lost: { 指引方位: '宮廷牌的雙元素各對應一個方位，交集就是建議尋找的方向。' },
     'free-1': { '第 1 張': '一問一答：這張牌就是你的問題最直接的回應。' },
     'free-3': { '第 1 張': '故事的開端——事件的前因。', '第 2 張': '中段的發展與轉折。', '第 3 張': '順著這個勢頭走的可能結局。' },
     'free-5': { '第 1 張': '訊息的開場。', '第 2 張': '第二幕：事件開始發展。', '第 3 張': '故事的中心——留意主軸牌是否在這裡。', '第 4 張': '第四幕：轉折與變化。', '第 5 張': '收尾的方向。' },
@@ -596,7 +643,7 @@ ${cardList || '（我還沒有翻開牌）'}
 }
 
 // 無牌陣提示詞：不套位置，改用「串故事、正逆位比例、大牌主軸、元素分布」的自由解讀原則。
-function freeFormPrompt({ question, spread, cards, tone }) {
+function freeFormPrompt({ question, spread, cards, tone, mode }) {
   const cardList = cards.map((card, index) => `${index + 1}. ${card.nameZh}（${card.isReversed ? '逆位' : '正位'}）｜${card.keywords}`).join('\n');
   const principles = spread.count === 1
     ? `* 這張牌就是我的問題最直接的回應，請直接就牌意回答，不要繞。
@@ -618,14 +665,15 @@ ${cardList || '（我還沒有翻開牌）'}
 無牌陣解讀原則：
 ${principles}
 
-${promptTones[tone] ?? promptTones.溫和}`;
+${mode && modeDirectives[mode] ? `${modeDirectives[mode]}\n\n` : ''}${promptTones[tone] ?? promptTones.溫和}`;
 }
 
-function gptPrompt({ question, spread, cards, tone = '溫和' }) {
+function gptPrompt({ question, spread, cards, tone = '溫和', mode = '一般' }) {
   if (tone === '顯化式') return manifestationPrompt({ question, spread, cards });
-  if (spread.id.startsWith('free-')) return freeFormPrompt({ question, spread, cards, tone });
+  if (spread.id.startsWith('free-')) return freeFormPrompt({ question, spread, cards, tone, mode });
   const cardList = cards.map((card) => `- ${card.position}：${card.nameZh}（${card.isReversed ? '逆位' : '正位'}）｜${card.keywords}`).join('\n');
-  return `你是一位深諳塔羅的解讀者。請用繁體中文協助我反思；不要把塔羅說成必然預言，不要替我做醫療、法律、投資或重大人生決定。\n\n我的問題：\n「${question || '（我尚未填寫，請先引導我把問題說清楚）'}」\n\n使用牌陣：${spread.name}\n各位置：${spread.positions.join('、')}\n\n已翻開的牌：\n${cardList || '（我還沒有翻開牌）'}\n\n請依牌陣位置逐張解讀，再整合它們的關聯；指出我可能忽略的盲點，並給我 1–3 個小而可執行的下一步。最後提供 3 個能讓我繼續思考的開放式追問。${promptTones[tone] ?? promptTones.溫和}`;
+  const directive = modeDirectives[mode] ? `\n\n${modeDirectives[mode]}` : '';
+  return `你是一位深諳塔羅的解讀者。請用繁體中文協助我反思；不要把塔羅說成必然預言，不要替我做醫療、法律、投資或重大人生決定。\n\n我的問題：\n「${question || '（我尚未填寫，請先引導我把問題說清楚）'}」\n\n使用牌陣：${spread.name}\n各位置：${spread.positions.join('、')}\n\n已翻開的牌：\n${cardList || '（我還沒有翻開牌）'}\n\n請依牌陣位置逐張解讀，再整合它們的關聯；指出我可能忽略的盲點，並給我 1–3 個小而可執行的下一步。最後提供 3 個能讓我繼續思考的開放式追問。${directive}\n\n${promptTones[tone] ?? promptTones.溫和}`;
 }
 
 function TarotCardDialog({ card, onClose }) {
@@ -665,10 +713,10 @@ function TarotCardDialog({ card, onClose }) {
   </div>;
 }
 
-function StagePrompt({ question, spread, cards }) {
+function StagePrompt({ question, spread, cards, mode }) {
   const [tone, setTone] = useState('溫和');
   const [copyStatus, setCopyStatus] = useState('');
-  const prompt = gptPrompt({ question, spread, cards, tone });
+  const prompt = gptPrompt({ question, spread, cards, tone, mode });
 
   async function copyPrompt() {
     try {
@@ -687,6 +735,16 @@ function StagePrompt({ question, spread, cards }) {
     </div>
     <details className="stage-prompt__preview"><summary>預覽提示詞</summary><textarea readOnly value={prompt} aria-label="可複製的 GPT 塔羅解讀提示詞" /></details>
     <span className="stage-prompt__status" aria-live="polite">{copyStatus}</span>
+  </div>;
+}
+
+function LostItemResult({ card }) {
+  const hints = lostItemHints(card);
+  return <div className="lost-result">
+    <small>COURT CARD COMPASS</small>
+    <p className="lost-result__direction"><b>方位建議</b>{hints.suit}（{hints.suitElement}）×{hints.rank}（{hints.rankElement}）→ {hints.direction}</p>
+    <p><b>環境提示</b>{hints.place}</p>
+    {card.isReversed && <p className="lost-result__reversed"><b>逆位提醒</b>東西可能被移動過、或卡在看不見的夾縫裡；回想「最後一次使用它」的場景，再從那裡往外找。</p>}
   </div>;
 }
 
@@ -756,7 +814,7 @@ function useGyroHolo(stageRef) {
   return gyroActive;
 }
 
-function ReadingStage({ spread, cards, revealedCards, loading, question, onReveal, onOpen, onBack, headingRef }) {
+function ReadingStage({ spread, cards, revealedCards, loading, question, mode, onReveal, onOpen, onBack, headingRef }) {
   const nextIndex = revealedCards.length;
   const stageRef = useRef(null);
   const gyroActive = useGyroHolo(stageRef);
@@ -771,7 +829,8 @@ function ReadingStage({ spread, cards, revealedCards, loading, question, onRevea
         <TarotCard card={card} index={index} revealed={revealedCards.includes(index)} canReveal={index === nextIndex && !loading} onReveal={(event) => onReveal(index, event)} onOpen={(event) => onOpen(card, event)} />
       </div>)}
     </div>
-    {allRevealed && <StagePrompt question={question} spread={spread} cards={visibleCards} />}
+    {spread.id === 'lost' && allRevealed && <LostItemResult card={cards[0]} />}
+    {allRevealed && <StagePrompt question={question} spread={spread} cards={visibleCards} mode={mode} />}
     <p className="stage-disclaimer">這份解讀提供反思與方向，不代替專業醫療、法律或財務建議。</p>
   </section>;
 }
@@ -779,6 +838,7 @@ function ReadingStage({ spread, cards, revealedCards, loading, question, onRevea
 export default function App() {
   const [spreadId, setSpreadId] = useState(spreads[0].id);
   const [question, setQuestion] = useState('');
+  const [mode, setMode] = useState('一般');
   const [category, setCategory] = useState('感情');
   const [scene, setScene] = useState('單身');
   const [cards, setCards] = useState([]);
@@ -792,12 +852,14 @@ export default function App() {
   const stageHeadingRef = useRef(null);
   const questionRef = useRef(null);
   const spread = spreads.find((item) => item.id === spreadId) ?? spreads[0];
+  const activeSpread = mode === '尋物' ? lostSpread : spread;
   const isChoosingCards = cards.length > 0;
 
   async function draw() {
-    if (!question.trim()) { setError('先寫下你想問的事，牌面才知道從哪裡開始。'); return; }
+    if (!question.trim()) { setError(mode === '尋物' ? '先寫下你在找什麼，宮廷牌才知道該指向哪裡。' : '先寫下你想問的事，牌面才知道從哪裡開始。'); return; }
     setError(''); setLoading(true); setRevealedCards([]); setSelectedCard(null);
-    const selected = shuffle(deck).slice(0, spread.count).map((card, index) => ({ ...card, position: spread.positions[index], positionMeaning: positionMeaning(spread.id, spread.positions[index]), isReversed: Math.random() < 0.35 }));
+    const pool = mode === '尋物' ? deck.filter((card) => card.arcana === '小阿爾克那' && courtRanks.some((rank) => card.nameZh.endsWith(rank))) : deck;
+    const selected = shuffle(pool).slice(0, activeSpread.count).map((card, index) => ({ ...card, position: activeSpread.positions[index], positionMeaning: positionMeaning(activeSpread.id, activeSpread.positions[index]), isReversed: Math.random() < 0.35 }));
     setCards(selected);
     await sleep(520);
     setStageOpen(true); setLoading(false);
@@ -829,9 +891,14 @@ export default function App() {
     {view === 'numerology' && <NumerologyPage />}
     {view === 'tarot' && !stageOpen && <div className="app-grid">
       <MagicPanel className="question-panel">
-        <p className="panel-kicker">01 · SET YOUR INTENTION</p><h2>先說說你在意的事</h2><p className="panel-intro">選擇牌陣，然後寫下此刻真正想問的問題。不需要完美，只要誠實。</p>
-        <div className="field"><span className="field-label" id="spread-select-label">選擇牌陣</span><SpreadSelect options={spreads} value={spreadId} disabled={loading || isChoosingCards} labelledBy="spread-select-label" onChange={setSpreadId} /></div><div className="spread-detail"><p>{spread.name} · {spread.count} 張牌</p><b>{spread.usage}</b><span>{spread.description}</span><small>抽牌位置：{spread.positions.join(' · ')}</small></div>
-        <label>你的問題<textarea ref={questionRef} value={question} disabled={loading || isChoosingCards} onChange={(event) => setQuestion(event.target.value)} placeholder="例如：我接下來三個月最該專注的是什麼？" /></label>
+        <p className="panel-kicker">01 · SET YOUR INTENTION</p><h2>先說說你在意的事</h2><p className="panel-intro">選擇占卜模式與牌陣，然後寫下此刻真正想問的問題。不需要完美，只要誠實。</p>
+        <div className="field"><span className="field-label">占卜模式</span>
+          <div className="mode-row">{Object.keys(readingModes).map((item) => <button type="button" key={item} disabled={loading || isChoosingCards} className={mode === item ? 'category active' : 'category'} onClick={() => setMode(item)}>{item}</button>)}</div>
+          <p className="mode-hint">{readingModes[mode].hint}</p>
+        </div>
+        {mode !== '尋物' && <><div className="field"><span className="field-label" id="spread-select-label">選擇牌陣</span><SpreadSelect options={spreads} value={spreadId} disabled={loading || isChoosingCards} labelledBy="spread-select-label" onChange={setSpreadId} /></div><div className="spread-detail"><p>{spread.name} · {spread.count} 張牌</p><b>{spread.usage}</b><span>{spread.description}</span><small>抽牌位置：{spread.positions.join(' · ')}</small></div></>}
+        {mode === '尋物' && <div className="spread-detail"><p>尋物 · 宮廷牌 · 1 張</p><b>固定從 16 張宮廷牌（侍者／騎士／皇后／國王）中抽一張。</b><span>牌組與位階各帶一個元素，兩個元素對應的方位交集，就是建議尋找的方向；翻牌後會直接顯示方位與環境提示。</span></div>}
+        <label>你的問題<textarea ref={questionRef} value={question} disabled={loading || isChoosingCards} onChange={(event) => setQuestion(event.target.value)} placeholder={readingModes[mode].placeholder} /></label>
         <div className="actions"><MagicButton className="draw-button" disabled={loading || isChoosingCards} onClick={draw}>{loading ? '正在翻閱牌面…' : '抽牌解讀'} <span>✦</span></MagicButton><button className="reset-button" disabled={loading} onClick={reset}>重設</button></div>
         {error && <p className="error">{error}</p>}
       </MagicPanel>
@@ -844,7 +911,7 @@ export default function App() {
         {scenarioQuestionGroups[category] && <p className="question-credit">{category}題庫來源：<a href="https://sannie.tw/" target="_blank" rel="noreferrer">珊妮療癒所</a></p>}
       </MagicPanel>
     </div>}
-    {view === 'tarot' && stageOpen && <ReadingStage spread={spread} cards={cards} revealedCards={revealedCards} loading={loading} question={question} onReveal={revealCard} onOpen={openCard} onBack={returnToSetup} headingRef={stageHeadingRef} />}
+    {view === 'tarot' && stageOpen && <ReadingStage spread={activeSpread} cards={cards} revealedCards={revealedCards} loading={loading} question={question} mode={mode} onReveal={revealCard} onOpen={openCard} onBack={returnToSetup} headingRef={stageHeadingRef} />}
     {view === 'tarot' && selectedCard && <TarotCardDialog card={selectedCard} onClose={closeCard} />}
   </main>;
 }
