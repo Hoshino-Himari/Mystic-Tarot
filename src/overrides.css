@@ -64,6 +64,35 @@
 
 .subcat.active { border-color: rgba(170, 153, 221, .65); background: rgba(170, 153, 221, .16); color: #e3d9ff; }
 
+.category,
+.subcat {
+  transition: transform .18s ease, border-color .18s ease, background .18s ease, color .18s ease, box-shadow .18s ease;
+}
+
+.category:hover:not(:disabled),
+.subcat:hover:not(:disabled) {
+  transform: translateY(-3px);
+  border-color: rgba(234, 193, 107, .48);
+  box-shadow: 0 7px 15px rgba(3, 4, 17, .24), inset 0 1px rgba(255, 255, 255, .1);
+}
+
+.subcategory-row .subcat:hover:not(:disabled) {
+  border-color: rgba(183, 160, 255, .65);
+  background: rgba(170, 153, 221, .13);
+}
+
+.category.active:hover:not(:disabled),
+.subcat.active:hover:not(:disabled) {
+  box-shadow: 0 8px 17px rgba(3, 4, 17, .3), 0 0 16px rgba(234, 193, 107, .1), inset 0 1px rgba(255, 255, 255, .13);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .category,
+  .subcat { transition: none; }
+  .category:hover:not(:disabled),
+  .subcat:hover:not(:disabled) { transform: none; }
+}
+
 .question-credit { margin: 12px 0 0; color: #8e879e; font-size: 11px; }
 .question-credit a { color: #d3b877; text-decoration: none; }
 .question-credit a:hover { text-decoration: underline; }
