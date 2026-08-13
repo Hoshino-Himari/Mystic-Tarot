@@ -844,6 +844,7 @@ export default function App() {
   const [mode, setMode] = useState('一般');
   const [category, setCategory] = useState('感情');
   const [scene, setScene] = useState('單身');
+  const [promptListRevision, setPromptListRevision] = useState(0);
   const [cards, setCards] = useState([]);
   const [revealedCards, setRevealedCards] = useState([]);
   const [selectedCard, setSelectedCard] = useState(null);
@@ -908,9 +909,9 @@ export default function App() {
       <MagicPanel className="template-panel">
         <p className="panel-kicker">02 · FIND YOUR QUESTION</p><h2>從這裡挑一個問題</h2><p className="panel-intro">選一題當起點，或把它改成更貼近你此刻的語氣。</p>
         <div className="question-guide" aria-label="提問小指南"><p>怎麼問，才會更清楚？</p><div>{questionTips.map(([title, copy], index) => <article key={title}><span>0{index + 1}</span><b>{title}</b><small>{copy}</small></article>)}</div></div>
-        <div className="category-row">{questionCategories.map((item) => <button type="button" disabled={loading || isChoosingCards} className={category === item ? 'category active' : 'category'} onClick={() => { setCategory(item); if (scenarioQuestionGroups[item]) setScene(Object.keys(scenarioQuestionGroups[item])[0]); }} key={item}>{item}</button>)}</div>
-        {scenarioQuestionGroups[category] && <div className="subcategory-row">{Object.keys(scenarioQuestionGroups[category]).map((item) => <button type="button" disabled={loading || isChoosingCards} className={scene === item ? 'subcat active' : 'subcat'} onClick={() => setScene(item)} key={item}>{item}</button>)}</div>}
-        <div className="prompt-list">{(scenarioQuestionGroups[category] ? scenarioQuestionGroups[category][scene] ?? [] : flatQuestionGroups[category]).map((item) => <button type="button" disabled={loading || isChoosingCards} onClick={() => { setQuestion(item); questionRef.current?.focus(); }} key={item}>{item}<span>↗</span></button>)}</div>
+        <div className="category-row">{questionCategories.map((item) => <button type="button" disabled={loading || isChoosingCards} className={category === item ? 'category active' : 'category'} onClick={() => { setCategory(item); if (scenarioQuestionGroups[item]) setScene(Object.keys(scenarioQuestionGroups[item])[0]); setPromptListRevision((value) => value + 1); }} key={item}>{item}</button>)}</div>
+        {scenarioQuestionGroups[category] && <div className="subcategory-row">{Object.keys(scenarioQuestionGroups[category]).map((item) => <button type="button" disabled={loading || isChoosingCards} className={scene === item ? 'subcat active' : 'subcat'} onClick={() => { setScene(item); setPromptListRevision((value) => value + 1); }} key={item}>{item}</button>)}</div>}
+        <div className={promptListRevision ? 'prompt-list prompt-list--entering' : 'prompt-list'} key={promptListRevision}>{(scenarioQuestionGroups[category] ? scenarioQuestionGroups[category][scene] ?? [] : flatQuestionGroups[category]).map((item, index) => <button type="button" disabled={loading || isChoosingCards} onClick={() => { setQuestion(item); questionRef.current?.focus(); }} key={item} style={{ animationDelay: `${index * 42}ms` }}>{item}<span>↗</span></button>)}</div>
         {scenarioQuestionGroups[category] && <p className="question-credit">{category}題庫來源：<a href="https://sannie.tw/" target="_blank" rel="noreferrer">珊妮療癒所</a></p>}
       </MagicPanel>
     </div>}
